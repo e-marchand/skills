@@ -36,6 +36,22 @@ print_error() {
     echo -e "${RED}✗${NC} $1"
 }
 
+# Check if running from pipe (stdin is not a terminal)
+is_piped() {
+    ! [ -t 0 ]
+}
+
+# If piped, download and re-exec from local file with TTY
+if is_piped && [ -z "$SKILLS_REEXEC" ]; then
+    TMP_DIR=$(mktemp -d)
+    curl -fsSL "$REPO_ZIP_URL" -o "$TMP_DIR/skills.zip" 2>/dev/null
+    unzip -q "$TMP_DIR/skills.zip" -d "$TMP_DIR"
+    export SKILLS_REEXEC=1
+    export SKILLS_TMP_DIR="$TMP_DIR"
+    # Re-exec with stdin from /dev/tty to restore terminal input
+    exec bash "$TMP_DIR/skills-main/install.sh" "$@" </dev/tty
+fi
+
 # Target directory (argument or current directory)
 TARGET_DIR="${1:-.}"
 TARGET_DIR="$(cd "$TARGET_DIR" && pwd)"
@@ -71,6 +87,30 @@ find_skills() {
     echo "${skills[@]}"
 }
 
+# Ask user which folder to create
+ask_folder_choice() {
+    # Print menu to stderr so it's visible (stdout is captured by $(...))
+    echo "" >&2
+    echo "Which folder would you like to create?" >&2
+    echo "  1) .claude  (Claude Code)" >&2
+    echo "  2) .github  (GitHub Copilot)" >&2
+    echo "  3) .agent   (Antigravity)" >&2
+    echo "  4) All of the above" >&2
+    echo "" >&2
+    read -p "Enter choice [1-4]: " choice
+
+    case "$choice" in
+        1) echo ".claude" ;;
+        2) echo ".github" ;;
+        3) echo ".agent" ;;
+        4) echo ".claude .github .agent" ;;
+        *)
+            print_error "Invalid choice. Exiting."
+            exit 1
+            ;;
+    esac
+}
+
 # Main installation
 main() {
     echo ""
@@ -87,54 +127,39 @@ main() {
     if [ ${#found_folders[@]} -eq 0 ]; then
         # No config folder found, ask user
         print_warning "No .claude, .github, or .agent folder found in $TARGET_DIR"
-        echo ""
-        echo "Which folder would you like to create?"
-        echo "  1) .claude  (Claude Code)"
-        echo "  2) .github  (GitHub Copilot)"
-        echo "  3) .agent   (Antigravity)"
-        echo "  4) All of the above"
-        echo ""
-        read -p "Enter choice [1-4]: " choice
-
-        case "$choice" in
-            1) found_folders=(".claude") ;;
-            2) found_folders=(".github") ;;
-            3) found_folders=(".agent") ;;
-            4) found_folders=(".claude" ".github" ".agent") ;;
-            *)
-                print_error "Invalid choice. Exiting."
-                exit 1
-                ;;
-        esac
+        IFS=' ' read -ra found_folders <<< "$(ask_folder_choice)"
     else
         print_success "Found existing config folders: ${found_folders[*]}"
     fi
 
     echo ""
 
-    # Create temp directory
-    TMP_DIR=$(mktemp -d)
-    trap "rm -rf '$TMP_DIR'" EXIT
-
-    # Download and extract the repo
-    print_info "Downloading skills from GitHub..."
-    if curl -fsSL "$REPO_ZIP_URL" -o "$TMP_DIR/skills.zip"; then
-        print_success "Downloaded skills archive"
+    # Use existing temp dir if re-exec'd, otherwise download
+    if [ -n "$SKILLS_TMP_DIR" ] && [ -d "$SKILLS_TMP_DIR/skills-main" ]; then
+        EXTRACTED_DIR="$SKILLS_TMP_DIR/skills-main"
+        trap "rm -rf '$SKILLS_TMP_DIR'" EXIT
     else
-        print_error "Failed to download skills archive"
-        exit 1
-    fi
+        TMP_DIR=$(mktemp -d)
+        trap "rm -rf '$TMP_DIR'" EXIT
 
-    print_info "Extracting..."
-    if unzip -q "$TMP_DIR/skills.zip" -d "$TMP_DIR"; then
-        print_success "Extracted archive"
-    else
-        print_error "Failed to extract archive"
-        exit 1
-    fi
+        print_info "Downloading skills from GitHub..."
+        if curl -fsSL "$REPO_ZIP_URL" -o "$TMP_DIR/skills.zip"; then
+            print_success "Downloaded skills archive"
+        else
+            print_error "Failed to download skills archive"
+            exit 1
+        fi
 
-    # Find the extracted folder (skills-main)
-    EXTRACTED_DIR="$TMP_DIR/skills-main"
+        print_info "Extracting..."
+        if unzip -q "$TMP_DIR/skills.zip" -d "$TMP_DIR"; then
+            print_success "Extracted archive"
+        else
+            print_error "Failed to extract archive"
+            exit 1
+        fi
+
+        EXTRACTED_DIR="$TMP_DIR/skills-main"
+    fi
 
     # Find all skills
     IFS=' ' read -ra SKILLS <<< "$(find_skills "$EXTRACTED_DIR")"
@@ -161,6 +186,7 @@ main() {
             # Make scripts executable
             if [ -d "$dest_dir/$skill/scripts" ]; then
                 chmod +x "$dest_dir/$skill/scripts/"*.sh 2>/dev/null || true
+                chmod +x "$dest_dir/$skill/scripts/"*.py 2>/dev/null || true
             fi
 
             print_success "  Installed $skill"
