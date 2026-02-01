@@ -7,7 +7,10 @@ Skills for running and compiling 4D projects with AI coding assistants.
 | Skill | Description |
 |-------|-------------|
 | [4d-run](4d-run/SKILL.md) | Run a 4D method using tool4d command-line tool |
-| [4d-compile](4d-compile/SKILL.md) | Compile a 4D project to check for syntax errors |
+| [4d-check-syntax](4d-check-syntax/SKILL.md) | Compile a 4D project to check for syntax errors |
+| [4d-create-project](4d-create-project/SKILL.md) | Create a new 4D project from scratch |
+| [4d-find-command](4d-find-command/SKILL.md) | Find 4D commands by keyword |
+| [4d-validate-form](4d-validate-form/SKILL.md) | Validate a .4DForm file against JSON schema |
 
 ## Installation
 
