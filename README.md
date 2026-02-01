@@ -11,6 +11,27 @@ Skills for running and compiling 4D projects with AI coding assistants.
 
 ## Installation
 
+### Quick Install (Recommended)
+
+Run this command in your project directory:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/e-marchand/skills/main/install.sh | bash
+```
+
+Or specify a target directory:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/e-marchand/skills/main/install.sh | bash -s -- /path/to/your/project
+```
+
+The installer will:
+- Detect existing `.claude`, `.github`, or `.agent` folders
+- If none found, prompt you to choose which one to create
+- Download and install all skills to the appropriate location
+
+### Manual Installation
+
 Copy the skill folders to the appropriate location for your AI assistant:
 
 | Assistant | Project Location | Global Location |

@@ -1,10 +1,10 @@
 ---
-name: 4d-compile
-description: Compile a 4D project to check for syntax errors and type issues. Use this skill when the user wants to compile, check syntax, or validate a 4D project. Creates a _compile method if not present, then runs it using tool4d. Returns compilation errors in JSON format for easy parsing.
+name: 4d-check-syntax
+description: Check syntax and compile a 4D project to find errors and type issues. Use this skill when the user wants to compile, check syntax, or validate a 4D project. Creates a _compile method if not present, then runs it using tool4d. Returns compilation errors in JSON format for easy parsing.
 license: Apache 2.0
 ---
 
-# 4D Project Compiler
+# 4D Syntax Checker
 
 Compile a 4D project to check for syntax errors and type mismatches.
 
