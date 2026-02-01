@@ -47,3 +47,7 @@ Copy the skill folders to the appropriate location for your AI assistant:
 
 - **tool4d**: Must be installed in VS Code or Antigravity by [4D-Analyser extension](https://marketplace.visualstudio.com/items?itemName=4D.4d-analyzer)
 - **macOS**: Scripts are designed for macOS paths
+
+## What are Agent Skills?
+
+See [ABOUT_SKILLS.md](ABOUT_SKILLS.md) for a detailed explanation of what Agent Skills are and how they work.
