@@ -4,9 +4,10 @@ Originally developed by Anthropic for Claude, Agent Skills are now an open stand
 
 Like MCP (Model Context Protocol), it's a way to extend LLM capabilities by providing specialized instructions and additional resources.
 
-- **Official specification**: https://agentskills.io
-- **VS Code Documentation**: https://code.visualstudio.com/docs/copilot/customization/agent-skills
-- **Claude Code Documentation**: https://docs.anthropic.com/en/docs/claude-code/skills
+- **Official specification**: [https://agentskills.io](https://agentskills.io)
+- **VS Code Documentation**: [https://code.visualstudio.com/docs/copilot/customization/agent-skills](https://code.visualstudio.com/docs/copilot/customization/agent-skills)
+- **Claude Code Documentation**: [https://docs.anthropic.com/en/docs/claude-code/skills](https://docs.anthropic.com/en/docs/claude-code/skills)
+- **Antigravity Documentation**: [https://antigravity.google/docs/skills](https://antigravity.google/docs/skills)
 
 ## How does it work?
 
@@ -18,7 +19,7 @@ A skill is simply a folder containing a `SKILL.md` file with:
 
 The agent loads these skills dynamically and on-demand based on the conversation context.
 
-See an example: https://agentskills.io/what-are-skills
+See an example: [https://agentskills.io/what-are-skills](https://agentskills.io/what-are-skills)
 
 ## Why does it cost fewer tokens?
 
@@ -46,9 +47,9 @@ Enable in VS Code: `chat.useAgentSkills` (currently in preview)
 
 Many websites offer ready-to-use skills in the standard format:
 
-- **Anthropic (official)**: https://github.com/anthropics/skills — Reference skills including document creation (docx, pdf, pptx, xlsx)
-- **SkillsMP**: https://skillsmp.com — Community marketplace with 25,000+ skills
-- **Smithery Skills**: https://smithery.ai/skills — 15,000+ community skills
+- **Anthropic (official)**: [https://github.com/anthropics/skills](https://github.com/anthropics/skills) — Reference skills including document creation (docx, pdf, pptx, xlsx)
+- **SkillsMP**: [https://skillsmp.com](https://skillsmp.com) — Community marketplace with 25,000+ skills
+- **Smithery Skills**: [https://smithery.ai/skills](https://smithery.ai/skills) — 15,000+ community skills
 
 ## Build Your Own Skills
 
@@ -56,9 +57,9 @@ You can create custom skills tailored to your team's workflows!
 
 ### How to get started
 
-- Follow the official specification: https://agentskills.io/specification
-- VS Code guide: https://code.visualstudio.com/docs/copilot/customization/agent-skills#_create-a-skill
-- Use Anthropic's skill-creator skill: https://github.com/anthropics/skills/tree/main/skills/skill-creator
+- Follow the official specification: [https://agentskills.io/specification](https://agentskills.io/specification)
+- VS Code guide: [https://code.visualstudio.com/docs/copilot/customization/agent-skills#_create-a-skill](https://code.visualstudio.com/docs/copilot/customization/agent-skills#_create-a-skill)
+- Use Anthropic's skill-creator skill: [https://github.com/anthropics/skills/tree/main/skills/skill-creator](https://github.com/anthropics/skills/tree/main/skills/skill-creator)
 
 ### Example use cases for custom skills
 
