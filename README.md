@@ -39,7 +39,7 @@ Copy the skill folders to the appropriate location for your AI assistant:
 
 | Assistant | Project Location | Global Location |
 |-----------|------------------|-----------------|
-| Claude Code | `.claude/skills/` | - |
+| Claude Code | `.claude/skills/` | [Install from release](https://github.com/e-marchand/skills/releases) |
 | GitHub Copilot | `.github/skills/` | `~/.github/skills/` |
 | Antigravity | `.agent/skills/` | `~/.gemini/antigravity/global_skills/` |
 
