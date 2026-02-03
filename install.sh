@@ -69,6 +69,9 @@ detect_config_folder() {
     if [ -d "$TARGET_DIR/.agent" ]; then
         found_folders+=(".agent")
     fi
+    if [ -d "$TARGET_DIR/.codex" ]; then
+        found_folders+=(".codex")
+    fi
 
     echo "${found_folders[@]}"
 }
@@ -95,15 +98,17 @@ ask_folder_choice() {
     echo "  1) .claude  (Claude Code)" >&2
     echo "  2) .github  (GitHub Copilot)" >&2
     echo "  3) .agent   (Antigravity)" >&2
-    echo "  4) All of the above" >&2
+    echo "  4) .codex   (Codex)" >&2
+    echo "  5) All of the above" >&2
     echo "" >&2
-    read -p "Enter choice [1-4]: " choice
+    read -p "Enter choice [1-5]: " choice
 
     case "$choice" in
         1) echo ".claude" ;;
         2) echo ".github" ;;
         3) echo ".agent" ;;
-        4) echo ".claude .github .agent" ;;
+        4) echo ".codex" ;;
+        5) echo ".claude .github .agent .codex" ;;
         *)
             print_error "Invalid choice. Exiting."
             exit 1
@@ -126,7 +131,7 @@ main() {
 
     if [ ${#found_folders[@]} -eq 0 ]; then
         # No config folder found, ask user
-        print_warning "No .claude, .github, or .agent folder found in $TARGET_DIR"
+        print_warning "No .claude, .github, .agent, or .codex folder found in $TARGET_DIR"
         IFS=' ' read -ra found_folders <<< "$(ask_folder_choice)"
     else
         print_success "Found existing config folders: ${found_folders[*]}"

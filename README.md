@@ -29,7 +29,7 @@ curl -fsSL https://raw.githubusercontent.com/e-marchand/skills/main/install.sh |
 ```
 
 The installer will:
-- Detect existing `.claude`, `.github`, or `.agent` folders
+- Detect existing `.claude`, `.github`, `.agent` or `.codex` folders
 - If none found, prompt you to choose which one to create
 - Download and install all skills to the appropriate location
 
@@ -42,6 +42,7 @@ Copy the skill folders to the appropriate location for your AI assistant:
 | Claude Code | `.claude/skills/` | [Install from release](https://github.com/e-marchand/skills/releases) |
 | GitHub Copilot | `.github/skills/` | `~/.github/skills/` |
 | Antigravity | `.agent/skills/` | `~/.gemini/antigravity/global_skills/` |
+| Codex | `.codex/skills/` | `~/.codex/skills/` |
 
 ## Requirements
 

@@ -8,6 +8,7 @@ Like MCP (Model Context Protocol), it's a way to extend LLM capabilities by prov
 - **VS Code Documentation**: [https://code.visualstudio.com/docs/copilot/customization/agent-skills](https://code.visualstudio.com/docs/copilot/customization/agent-skills)
 - **Claude Code Documentation**: [https://docs.anthropic.com/en/docs/claude-code/skills](https://docs.anthropic.com/en/docs/claude-code/skills)
 - **Antigravity Documentation**: [https://antigravity.google/docs/skills](https://antigravity.google/docs/skills)
+- **Codex Documentation**: [https://developers.openai.com/codex/skills](https://developers.openai.com/codex/skills)
 
 ## How does it work?
 
@@ -40,6 +41,7 @@ Skills are placed in specific folders depending on your AI assistant:
 | Claude Code | `.claude/skills/` | - |
 | GitHub Copilot | `.github/skills/` | `~/.github/skills/` |
 | Antigravity | `.agent/skills/` | `~/.gemini/antigravity/global_skills/` |
+| Codex | `.codex/skills/` | `~/.codex/skills/` |
 
 Enable in VS Code: `chat.useAgentSkills` (currently in preview)
 
