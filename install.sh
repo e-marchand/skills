@@ -69,11 +69,14 @@ if [ "$GLOBAL_MODE" = false ]; then
     TARGET_DIR="$(cd "$TARGET_DIR" && pwd)"
 fi
 
-# Global install directories (home-based)
-declare -A GLOBAL_DIRS
-GLOBAL_DIRS[".github"]="$HOME/.github/skills"
-GLOBAL_DIRS[".agent"]="$HOME/.gemini/antigravity/global_skills"
-GLOBAL_DIRS[".codex"]="$HOME/.codex/skills"
+# Global install directory for a given service key
+global_dir_for() {
+    case "$1" in
+        .github) echo "$HOME/.github/skills" ;;
+        .agent)  echo "$HOME/.gemini/antigravity/global_skills" ;;
+        .codex)  echo "$HOME/.codex/skills" ;;
+    esac
+}
 
 # Detect existing config folders (project mode)
 detect_config_folder() {
@@ -100,7 +103,8 @@ detect_global_folder() {
     local found_folders=()
 
     for key in ".github" ".agent" ".codex"; do
-        local dir="${GLOBAL_DIRS[$key]}"
+        local dir
+        dir="$(global_dir_for "$key")"
         # Check if the parent structure exists
         if [ -d "$(dirname "$dir")" ]; then
             found_folders+=("$key")
@@ -254,7 +258,7 @@ main() {
     # Install skills to each folder
     for folder in "${found_folders[@]}"; do
         if [ "$GLOBAL_MODE" = true ]; then
-            dest_dir="${GLOBAL_DIRS[$folder]}"
+            dest_dir="$(global_dir_for "$folder")"
             print_info "Installing to $dest_dir/"
         else
             dest_dir="$TARGET_DIR/$folder/skills"
