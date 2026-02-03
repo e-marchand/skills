@@ -6,6 +6,7 @@
 # Usage:
 #   curl -fsSL https://raw.githubusercontent.com/e-marchand/skills/main/install.sh | bash
 #   curl -fsSL https://raw.githubusercontent.com/e-marchand/skills/main/install.sh | bash -s -- /path/to/project
+#   curl -fsSL https://raw.githubusercontent.com/e-marchand/skills/main/install.sh | bash -s -- --global
 #
 
 set -e
@@ -52,11 +53,29 @@ if is_piped && [ -z "$SKILLS_REEXEC" ]; then
     exec bash "$TMP_DIR/skills-main/install.sh" "$@" </dev/tty
 fi
 
-# Target directory (argument or current directory)
-TARGET_DIR="${1:-.}"
-TARGET_DIR="$(cd "$TARGET_DIR" && pwd)"
+# Parse arguments
+GLOBAL_MODE=false
+TARGET_DIR=""
 
-# Detect existing config folders
+for arg in "$@"; do
+    case "$arg" in
+        --global) GLOBAL_MODE=true ;;
+        *) TARGET_DIR="$arg" ;;
+    esac
+done
+
+if [ "$GLOBAL_MODE" = false ]; then
+    TARGET_DIR="${TARGET_DIR:-.}"
+    TARGET_DIR="$(cd "$TARGET_DIR" && pwd)"
+fi
+
+# Global install directories (home-based)
+declare -A GLOBAL_DIRS
+GLOBAL_DIRS[".github"]="$HOME/.github/skills"
+GLOBAL_DIRS[".agent"]="$HOME/.gemini/antigravity/global_skills"
+GLOBAL_DIRS[".codex"]="$HOME/.codex/skills"
+
+# Detect existing config folders (project mode)
 detect_config_folder() {
     local found_folders=()
 
@@ -76,6 +95,21 @@ detect_config_folder() {
     echo "${found_folders[@]}"
 }
 
+# Detect existing global config folders
+detect_global_folder() {
+    local found_folders=()
+
+    for key in ".github" ".agent" ".codex"; do
+        local dir="${GLOBAL_DIRS[$key]}"
+        # Check if the parent structure exists
+        if [ -d "$(dirname "$dir")" ]; then
+            found_folders+=("$key")
+        fi
+    done
+
+    echo "${found_folders[@]}"
+}
+
 # Find all skill folders (directories containing SKILL.md)
 find_skills() {
     local source_dir="$1"
@@ -90,7 +124,7 @@ find_skills() {
     echo "${skills[@]}"
 }
 
-# Ask user which folder to create
+# Ask user which folder to create (project mode)
 ask_folder_choice() {
     # Print menu to stderr so it's visible (stdout is captured by $(...))
     echo "" >&2
@@ -116,6 +150,31 @@ ask_folder_choice() {
     esac
 }
 
+# Ask user which global folder to create
+ask_global_folder_choice() {
+    echo "" >&2
+    echo "Which global location would you like to install to?" >&2
+    echo "  1) ~/.github/skills/                        (GitHub Copilot)" >&2
+    echo "  2) ~/.gemini/antigravity/global_skills/      (Antigravity)" >&2
+    echo "  3) ~/.codex/skills/                          (Codex)" >&2
+    echo "  4) All of the above" >&2
+    echo "" >&2
+    print_warning "Claude Code does not support a global skills directory." >&2
+    echo "" >&2
+    read -p "Enter choice [1-4]: " choice
+
+    case "$choice" in
+        1) echo ".github" ;;
+        2) echo ".agent" ;;
+        3) echo ".codex" ;;
+        4) echo ".github .agent .codex" ;;
+        *)
+            print_error "Invalid choice. Exiting."
+            exit 1
+            ;;
+    esac
+}
+
 # Main installation
 main() {
     echo ""
@@ -124,17 +183,32 @@ main() {
     echo "╚═══════════════════════════════════════╝"
     echo ""
 
-    print_info "Installing skills to: $TARGET_DIR"
-
-    # Detect existing folders
-    IFS=' ' read -ra found_folders <<< "$(detect_config_folder)"
-
-    if [ ${#found_folders[@]} -eq 0 ]; then
-        # No config folder found, ask user
-        print_warning "No .claude, .github, .agent, or .codex folder found in $TARGET_DIR"
-        IFS=' ' read -ra found_folders <<< "$(ask_folder_choice)"
+    if [ "$GLOBAL_MODE" = true ]; then
+        print_info "Installing skills globally"
     else
-        print_success "Found existing config folders: ${found_folders[*]}"
+        print_info "Installing skills to: $TARGET_DIR"
+    fi
+
+    if [ "$GLOBAL_MODE" = true ]; then
+        # Global mode: detect existing global folders
+        IFS=' ' read -ra found_folders <<< "$(detect_global_folder)"
+
+        if [ ${#found_folders[@]} -eq 0 ]; then
+            print_warning "No global config folders found"
+            IFS=' ' read -ra found_folders <<< "$(ask_global_folder_choice)"
+        else
+            print_success "Found existing global config for: ${found_folders[*]}"
+        fi
+    else
+        # Project mode: detect existing project folders
+        IFS=' ' read -ra found_folders <<< "$(detect_config_folder)"
+
+        if [ ${#found_folders[@]} -eq 0 ]; then
+            print_warning "No .claude, .github, .agent, or .codex folder found in $TARGET_DIR"
+            IFS=' ' read -ra found_folders <<< "$(ask_folder_choice)"
+        else
+            print_success "Found existing config folders: ${found_folders[*]}"
+        fi
     fi
 
     echo ""
@@ -179,9 +253,14 @@ main() {
 
     # Install skills to each folder
     for folder in "${found_folders[@]}"; do
-        dest_dir="$TARGET_DIR/$folder/skills"
+        if [ "$GLOBAL_MODE" = true ]; then
+            dest_dir="${GLOBAL_DIRS[$folder]}"
+            print_info "Installing to $dest_dir/"
+        else
+            dest_dir="$TARGET_DIR/$folder/skills"
+            print_info "Installing to $folder/skills/"
+        fi
 
-        print_info "Installing to $folder/skills/"
         mkdir -p "$dest_dir"
 
         for skill in "${SKILLS[@]}"; do

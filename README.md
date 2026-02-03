@@ -28,8 +28,14 @@ Or specify a target directory:
 curl -fsSL https://raw.githubusercontent.com/e-marchand/skills/main/install.sh | bash -s -- /path/to/your/project
 ```
 
+Or install globally (available across all projects):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/e-marchand/skills/main/install.sh | bash -s -- --global
+```
+
 The installer will:
-- Detect existing `.claude`, `.github`, `.agent` or `.codex` folders
+- Detect existing `.claude`, `.github`, `.agent` or `.codex` folders (or their global equivalents with `--global`)
 - If none found, prompt you to choose which one to create
 - Download and install all skills to the appropriate location
 
