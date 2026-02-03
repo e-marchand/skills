@@ -19,6 +19,7 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
+ORANGE='\033[38;5;208m'
 NC='\033[0m' # No Color
 
 print_info() {
@@ -182,9 +183,15 @@ ask_global_folder_choice() {
 # Main installation
 main() {
     echo ""
-    echo "╔═══════════════════════════════════════╗"
-    echo "║      4D Skills Installer              ║"
-    echo "╚═══════════════════════════════════════╝"
+    echo -e "${ORANGE}╔═══════════════════════════════════════╗${NC}"
+    echo -e "${ORANGE}║${NC}                                       ${ORANGE}║${NC}"
+    echo -e "${ORANGE}║${NC}      ${BLUE}█  █▀▀▀▖${NC}                         ${ORANGE}║${NC}"
+    echo -e "${ORANGE}║${NC}      ${BLUE}█  █   ▌${NC}  Skills Installer       ${ORANGE}║${NC}"
+    echo -e "${ORANGE}║${NC}      ${BLUE}████   ▌${NC}                         ${ORANGE}║${NC}"
+    echo -e "${ORANGE}║${NC}         ${BLUE}█   ▌${NC}                         ${ORANGE}║${NC}"
+    echo -e "${ORANGE}║${NC}         ${BLUE}█▄▄▄▘${NC}                         ${ORANGE}║${NC}"
+    echo -e "${ORANGE}║${NC}                                       ${ORANGE}║${NC}"
+    echo -e "${ORANGE}╚═══════════════════════════════════════╝${NC}"
     echo ""
 
     if [ "$GLOBAL_MODE" = true ]; then
