@@ -3,11 +3,12 @@
 Validate a 4D form file (.4DForm) against the JSON schema.
 
 Usage:
-    validate_form.py <form_file>
-    validate_form.py <form_file> --schema <schema_file>
+    validate_form.py <form_file_or_name>
+    validate_form.py <form_file_or_name> --schema <schema_file>
 
 Examples:
     validate_form.py Project/Sources/Forms/MyForm/form.4DForm
+    validate_form.py MyForm  # Resolves to Project/Sources/Forms/MyForm/form.4DForm
     validate_form.py form.4DForm --schema /path/to/formsSchema.json
 """
 
@@ -32,18 +33,52 @@ def find_schema():
     return None
 
 
+def resolve_form_path(form_input):
+    """Resolve form name or path to full path.
+    
+    If form_input is a direct path that exists, use it.
+    Otherwise, try to resolve it as a form name in the standard 4D project structure:
+    <cwd>/Project/Sources/Forms/<form_name>/form.4DForm
+    
+    Args:
+        form_input: Form file path or form name
+        
+    Returns:
+        Path object to the form file
+    """
+    form_path = Path(form_input)
+    
+    # If it exists as-is, use it
+    if form_path.exists():
+        return form_path
+    
+    # Try to resolve as form name in standard 4D structure from current directory
+    cwd = Path.cwd()
+    standard_path = cwd / "Project" / "Sources" / "Forms" / form_input / "form.4DForm"
+    if standard_path.exists():
+        return standard_path
+    
+    # Also try from test subdirectory (common during development)
+    test_path = cwd / "test" / "Project" / "Sources" / "Forms" / form_input / "form.4DForm"
+    if test_path.exists():
+        return test_path
+    
+    # Return original path (will fail later with appropriate error)
+    return form_path
+
+
 def validate_form(form_path, schema_path=None):
     """
     Validate a 4D form file against the JSON schema.
 
     Args:
-        form_path: Path to the .4DForm file
+        form_path: Path to the .4DForm file or form name
         schema_path: Optional path to schema file (uses bundled schema if not provided)
 
     Returns:
         Tuple of (is_valid, errors)
     """
-    form_path = Path(form_path)
+    form_path = resolve_form_path(form_path)
 
     if not form_path.exists():
         return False, [f"Form file not found: {form_path}"]
@@ -86,7 +121,7 @@ def validate_form(form_path, schema_path=None):
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: validate_form.py <form_file> [--schema <schema_file>]")
+        print("Usage: validate_form.py <form_file_or_name> [--schema <schema_file>]")
         sys.exit(1)
 
     form_path = sys.argv[1]

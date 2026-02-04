@@ -12,6 +12,18 @@ Validate `.4DForm` files against the 4D forms JSON schema.
 
 ```bash
 python scripts/validate_form.py <path/to/form.4DForm>
+# Or use just the form name (resolves to Project/Sources/Forms/<name>/form.4DForm)
+python scripts/validate_form.py <FormName>
+```
+
+### Examples
+
+```bash
+# Full path
+python scripts/validate_form.py Project/Sources/Forms/MyForm/form.4DForm
+
+# Just form name (shorter, fewer tokens)
+python scripts/validate_form.py MyForm
 ```
 
 Requires `jsonschema` package: `pip install jsonschema`
