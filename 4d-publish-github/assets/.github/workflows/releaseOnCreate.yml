@@ -1,0 +1,50 @@
+name: ReleaseOnCreate
+on:
+  release:
+    types: [created]
+
+jobs:
+  build:
+    name: "Build"
+    runs-on: macos-latest
+    steps:
+      - name: ⬇️ Checkout
+        uses: actions/checkout@v5
+
+      - name: BuildAndPackage
+        id: build-package
+        uses: 4d/build4d-action@main
+        with:
+          actions: "clean,build,pack,archive"
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: "${{ github.event.repository.name }}.zip"
+          path: "build/${{ github.event.repository.name }}.zip"
+          retention-days: 1
+          if-no-files-found: error
+
+  attach:
+    needs: build
+    name: "Attach to Release"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: 📄 Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Download packages
+        uses: actions/download-artifact@v4
+        with:
+          name: "${{ github.event.repository.name }}.zip"
+          path: artifact
+
+      - name: 📦 Upload Asset to Release
+        run: |
+          gh release upload ${{ github.event.release.tag_name }} \
+            "${{ github.workspace }}/artifact/${{ github.event.repository.name }}.zip" \
+            --clobber
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
