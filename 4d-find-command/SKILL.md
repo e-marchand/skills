@@ -35,7 +35,6 @@ Simple mode (signature only):
 JSON Parse(Text) -> Expression
 JSON Stringify(Expression, Text?) -> Text
 JSON Validate(Text, Object?) -> Object
-RESIZE FORM WINDOW(Integer, Integer)
 ```
 
 Verbose mode (adds category):
@@ -43,7 +42,6 @@ Verbose mode (adds category):
 JSON Parse(Text) -> Expression [JSON]
 JSON Stringify(Expression, Text?) -> Text [JSON]
 JSON Validate(Text, Object?) -> Object [JSON]
-RESIZE FORM WINDOW(Integer, Integer) [Windows]
 ```
 
 Parameters marked with `?` are optional.
