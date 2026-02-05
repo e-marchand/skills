@@ -14,6 +14,12 @@ Skills for running and compiling 4D projects with AI coding assistants.
 
 ## Installation
 
+### Use Vercel-lab skills installer
+
+```bash
+npx skills add e-marchand/skills
+```
+
 ### Quick Install (Recommended)
 
 Run this command in your project directory:
@@ -28,7 +34,7 @@ Or specify a target directory:
 curl -fsSL https://raw.githubusercontent.com/e-marchand/skills/main/install.sh | bash -s -- /path/to/your/project
 ```
 
-Or install globally (available across all projects):
+Or install **globally** (available across all projects):
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/e-marchand/skills/main/install.sh | bash -s -- --global
