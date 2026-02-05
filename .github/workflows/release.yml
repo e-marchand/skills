@@ -1,0 +1,51 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - '*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install pyyaml
+
+      - name: Find and package all skills
+        run: |
+          mkdir -p dist
+          
+          # Find all directories containing SKILL.md
+          for skill_dir in */; do
+            if [ -f "${skill_dir}SKILL.md" ]; then
+              skill_name="${skill_dir%/}"
+              echo "📦 Packaging skill: $skill_name"
+              python .github/scripts/package_skill.py "$skill_name" dist/
+            fi
+          done
+          
+          # List packaged skills
+          echo ""
+          echo "📋 Packaged skills:"
+          ls -la dist/
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.skill
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

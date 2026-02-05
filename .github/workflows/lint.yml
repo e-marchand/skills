@@ -1,0 +1,50 @@
+name: Lint
+
+on:
+  push:
+    paths:
+      - '**/SKILL.md'
+  pull_request:
+    paths:
+      - '**/SKILL.md'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install pyyaml
+
+      - name: Validate all skills
+        run: |
+          exit_code=0
+          
+          # Find all directories containing SKILL.md
+          for skill_dir in */; do
+            if [ -f "${skill_dir}SKILL.md" ]; then
+              skill_name="${skill_dir%/}"
+              echo "🔍 Validating: $skill_name"
+              if ! python .github/scripts/quick_validate.py "$skill_name"; then
+                exit_code=1
+              fi
+            fi
+          done
+          
+          if [ $exit_code -eq 0 ]; then
+            echo ""
+            echo "✅ All skills validated successfully!"
+          else
+            echo ""
+            echo "❌ Some skills failed validation"
+          fi
+          
+          exit $exit_code
