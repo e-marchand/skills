@@ -8,6 +8,7 @@ Skills for running and compiling 4D projects with AI coding assistants.
 |-------|-------------|
 | [4d-add-dependency](4d-add-dependency/SKILL.md) | Add dependencies to a 4D project |
 | [4d-check-syntax](4d-check-syntax/SKILL.md) | Compile a 4D project to check for syntax errors |
+| [4d-clean-project](4d-clean-project/SKILL.md) | Clean a 4D project by removing generated files and caches |
 | [4d-create-project](4d-create-project/SKILL.md) | Create a new 4D project from scratch |
 | [4d-find-command](4d-find-command/SKILL.md) | Find 4D commands by keyword |
 | [4d-publish-github](4d-publish-github/SKILL.md) | Publish a 4D project to GitHub with CI/CD workflows |
