@@ -7,6 +7,8 @@
 #   curl -fsSL https://raw.githubusercontent.com/e-marchand/skills/main/install.sh | bash
 #   curl -fsSL https://raw.githubusercontent.com/e-marchand/skills/main/install.sh | bash -s -- /path/to/project
 #   curl -fsSL https://raw.githubusercontent.com/e-marchand/skills/main/install.sh | bash -s -- --global
+#   ./install.sh --symlink              # Copy to first folder, symlink the rest to it
+#   ./install.sh --global --symlink     # Copy to first global dir, symlink the rest
 #
 
 set -e
@@ -56,11 +58,13 @@ fi
 
 # Parse arguments
 GLOBAL_MODE=false
+SYMLINK_MODE=false
 TARGET_DIR=""
 
 for arg in "$@"; do
     case "$arg" in
         --global) GLOBAL_MODE=true ;;
+        --symlink) SYMLINK_MODE=true ;;
         *) TARGET_DIR="$arg" ;;
     esac
 done
@@ -74,7 +78,13 @@ fi
 global_dir_for() {
     case "$1" in
         .github) echo "$HOME/.github/skills" ;;
-        .agent)  echo "$HOME/.gemini/antigravity/global_skills" ;;
+        .agent)
+            if [ "$SYMLINK_MODE" = true ]; then
+                echo "$HOME/.agent/skills"
+            else
+                echo "$HOME/.gemini/antigravity/global_skills"
+            fi
+            ;;
         .codex)  echo "$HOME/.codex/skills" ;;
     esac
 }
@@ -83,14 +93,14 @@ global_dir_for() {
 detect_config_folder() {
     local found_folders=()
 
+    if [ -d "$TARGET_DIR/.agent" ]; then
+        found_folders+=(".agent")
+    fi
     if [ -d "$TARGET_DIR/.claude" ]; then
         found_folders+=(".claude")
     fi
     if [ -d "$TARGET_DIR/.github" ]; then
         found_folders+=(".github")
-    fi
-    if [ -d "$TARGET_DIR/.agent" ]; then
-        found_folders+=(".agent")
     fi
     if [ -d "$TARGET_DIR/.codex" ]; then
         found_folders+=(".codex")
@@ -103,11 +113,11 @@ detect_config_folder() {
 detect_global_folder() {
     local found_folders=()
 
-    for key in ".github" ".agent" ".codex"; do
+    for key in ".agent" ".github" ".codex"; do
         local dir
         dir="$(global_dir_for "$key")"
-        # Check if the parent structure exists
-        if [ -d "$(dirname "$dir")" ]; then
+        # Check if the parent structure exists, or if symlink mode will create it
+        if [ -d "$(dirname "$dir")" ] || [ "$SYMLINK_MODE" = true ]; then
             found_folders+=("$key")
         fi
     done
@@ -251,6 +261,13 @@ main() {
         EXTRACTED_DIR="$TMP_DIR/skills-main"
     fi
 
+    # Symlink mode needs at least 2 folders to be useful (first gets copies, rest get links)
+    if [ "$SYMLINK_MODE" = true ] && [ ${#found_folders[@]} -lt 2 ]; then
+        print_warning "Symlink mode requires at least 2 target folders (first gets copies, rest get links)"
+        print_warning "Falling back to copy mode"
+        SYMLINK_MODE=false
+    fi
+
     # Find all skills
     IFS=' ' read -ra SKILLS <<< "$(find_skills "$EXTRACTED_DIR")"
 
@@ -263,34 +280,110 @@ main() {
     echo ""
 
     # Install skills to each folder
+    # In symlink mode: first folder gets copies, the rest get symlinks to the first
+    local primary_dir=""
+
     for folder in "${found_folders[@]}"; do
         if [ "$GLOBAL_MODE" = true ]; then
             dest_dir="$(global_dir_for "$folder")"
-            print_info "Installing to $dest_dir/"
         else
             dest_dir="$TARGET_DIR/$folder/skills"
-            print_info "Installing to $folder/skills/"
+        fi
+
+        # Determine if this folder gets copies or symlinks
+        local is_primary=false
+        if [ "$SYMLINK_MODE" = true ] && [ -z "$primary_dir" ]; then
+            is_primary=true
+            primary_dir="$dest_dir"
+        fi
+
+        if [ "$is_primary" = true ] || [ "$SYMLINK_MODE" = false ]; then
+            if [ "$GLOBAL_MODE" = true ]; then
+                print_info "Installing to $dest_dir/"
+            else
+                print_info "Installing to $folder/skills/"
+            fi
+        else
+            if [ "$GLOBAL_MODE" = true ]; then
+                print_info "Linking $dest_dir/ -> $primary_dir/"
+            else
+                print_info "Linking $folder/skills/ -> ${found_folders[0]}/skills/"
+            fi
         fi
 
         mkdir -p "$dest_dir"
 
         for skill in "${SKILLS[@]}"; do
-            print_info "  Copying $skill..."
-            cp -r "$EXTRACTED_DIR/$skill" "$dest_dir/"
+            local target="$dest_dir/$skill"
 
-            # Make scripts executable
-            if [ -d "$dest_dir/$skill/scripts" ]; then
-                chmod +x "$dest_dir/$skill/scripts/"*.sh 2>/dev/null || true
-                chmod +x "$dest_dir/$skill/scripts/"*.py 2>/dev/null || true
+            # Remove existing symlink to avoid cp errors
+            # In symlink mode, also remove existing directory so ln -s replaces it
+            if [ -L "$target" ]; then
+                rm "$target"
+            elif [ -d "$target" ] && [ "$SYMLINK_MODE" = true ]; then
+                rm -rf "$target"
             fi
 
-            print_success "  Installed $skill"
+            if [ "$SYMLINK_MODE" = true ] && [ "$is_primary" = false ]; then
+                # Symlink to the primary folder's skill
+                local link_source="$primary_dir/$skill"
+                if ln -s "$link_source" "$target" 2>/dev/null; then
+                    print_success "  Linked $skill"
+                else
+                    # Fallback to copy if symlink fails
+                    print_warning "  Symlink failed for $skill, copying instead..."
+                    cp -r "$EXTRACTED_DIR/$skill" "$dest_dir/"
+                    print_success "  Installed $skill (copied)"
+                fi
+            else
+                # Copy from source
+                print_info "  Copying $skill..."
+                cp -r "$EXTRACTED_DIR/$skill" "$dest_dir/"
+                print_success "  Installed $skill"
+            fi
+
+            # Make scripts executable (follow symlinks)
+            local real_skill="$target"
+            if [ -L "$target" ]; then
+                real_skill="$(readlink "$target")"
+            fi
+            if [ -d "$real_skill/scripts" ]; then
+                chmod +x "$real_skill/scripts/"*.sh 2>/dev/null || true
+                chmod +x "$real_skill/scripts/"*.py 2>/dev/null || true
+            fi
         done
 
         echo ""
     done
 
-    print_success "Installation complete!"
+    # In global symlink mode, also link Gemini's expected path to the primary
+    if [ "$SYMLINK_MODE" = true ] && [ "$GLOBAL_MODE" = true ]; then
+        local gemini_dir="$HOME/.gemini/antigravity/global_skills"
+        if [ "$primary_dir" != "$gemini_dir" ]; then
+            print_info "Linking $gemini_dir/ -> $primary_dir/"
+            mkdir -p "$gemini_dir"
+            for skill in "${SKILLS[@]}"; do
+                local gtarget="$gemini_dir/$skill"
+                if [ -L "$gtarget" ]; then
+                    rm "$gtarget"
+                elif [ -d "$gtarget" ]; then
+                    rm -rf "$gtarget"
+                fi
+                if ln -s "$primary_dir/$skill" "$gtarget" 2>/dev/null; then
+                    print_success "  Linked $skill"
+                else
+                    print_warning "  Symlink failed for $skill"
+                fi
+            done
+            echo ""
+        fi
+    fi
+
+    if [ "$SYMLINK_MODE" = true ]; then
+        print_success "Installation complete! (symlink mode)"
+    else
+        print_success "Installation complete!"
+    fi
     echo ""
     echo "Installed skills:"
     for skill in "${SKILLS[@]}"; do
