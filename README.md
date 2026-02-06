@@ -10,8 +10,11 @@ Skills for running and compiling 4D projects with AI coding assistants.
 | [4d-check-syntax](4d-check-syntax/SKILL.md) | Compile a 4D project to check for syntax errors |
 | [4d-clean-project](4d-clean-project/SKILL.md) | Clean a 4D project by removing generated files and caches |
 | [4d-create-project](4d-create-project/SKILL.md) | Create a new 4D project from scratch |
+| [4d-doc-lookup](4d-doc-lookup/SKILL.md) | Look up 4D documentation for commands, classes, or language concepts |
 | [4d-find-command](4d-find-command/SKILL.md) | Find 4D commands by keyword |
+| [4d-project-info](4d-project-info/SKILL.md) | Analyze a 4D project and produce a structured summary |
 | [4d-publish-github](4d-publish-github/SKILL.md) | Publish a 4D project to GitHub with CI/CD workflows |
+| [4d-publish-gitlab](4d-publish-gitlab/SKILL.md) | Publish a 4D project to GitLab (gitlab.com or self-hosted) |
 | [4d-run](4d-run/SKILL.md) | Run a 4D method using tool4d command-line tool |
 | [4d-validate-form](4d-validate-form/SKILL.md) | Validate a .4DForm file against JSON schema |
 
