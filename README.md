@@ -22,7 +22,7 @@
 
 ### Using npx (Easiest)
 
-One-command installation using the [skills CLI](https://github.com/vercel-labs/skills).
+One-command installation using the [skills CLI](https://github.com/vercel-labs/skills) (node must be installed).
 
 ```bash
 npx skills add e-marchand/skills
