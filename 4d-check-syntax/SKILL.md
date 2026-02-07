@@ -10,7 +10,9 @@ Compile a 4D project to check for syntax errors and type mismatches.
 
 ## Prerequisites
 
-Uses the **4d-run** skill to execute the compilation method. Ensure tool4d is available.
+Uses the **4d-run** skill to execute the compilation method. Ensure tool4d is available:
+- Install [4D-Analyzer extension](https://marketplace.visualstudio.com/items?itemName=4D.4d-analyzer) in VS Code/Antigravity, OR
+- Set `TOOL4D` environment variable to point to tool4d executable
 
 ## The _compile Method
 

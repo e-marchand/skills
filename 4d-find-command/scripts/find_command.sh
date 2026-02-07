@@ -40,6 +40,19 @@ fi
 
 # Find tool4d.app in standard locations
 find_tool4d_app() {
+    # Check if TOOL4D environment variable is set
+    if [ -n "$TOOL4D" ]; then
+        if [ -x "$TOOL4D" ]; then
+            # Extract app path from executable path
+            # TOOL4D might be /path/to/tool4d.app/Contents/MacOS/tool4d
+            local tool4d_app=$(echo "$TOOL4D" | sed 's/\/Contents\/MacOS\/tool4d$//')
+            if [[ "$tool4d_app" == *.app ]]; then
+                echo "$tool4d_app"
+                return 0
+            fi
+        fi
+    fi
+
     local search_paths=(
         "$HOME/Library/Application Support/Code/User/globalStorage/4d.4d-analyzer/tool4d"
         "$HOME/Library/Application Support/Antigravity/User/globalStorage/4d.4d-analyzer/tool4d"

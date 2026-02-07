@@ -1,6 +1,17 @@
 #!/bin/bash
 # Find tool4d in standard locations, return path to latest version
 
+# Check if TOOL4D environment variable is set
+if [ -n "$TOOL4D" ]; then
+    if [ -x "$TOOL4D" ]; then
+        echo "$TOOL4D"
+        exit 0
+    else
+        echo "Error: TOOL4D environment variable is set but not executable: $TOOL4D" >&2
+        exit 1
+    fi
+fi
+
 search_paths=(
     "$HOME/Library/Application Support/Code/User/globalStorage/4d.4d-analyzer/tool4d"
     "$HOME/Library/Application Support/Antigravity/User/globalStorage/4d.4d-analyzer/tool4d"
