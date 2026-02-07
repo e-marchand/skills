@@ -94,3 +94,9 @@ Add this to your `~/.zshrc` or `~/.bash_profile` to make it permanent.
 ## What are Agent Skills?
 
 See [ABOUT_SKILLS.md](ABOUT_SKILLS.md) for a detailed explanation of what Agent Skills are and how they work.
+
+## Legal
+
+This project is maintained by a 4D employee for development tasks but is not an official 4D product. It is provided as-is without warranty. 4D is a trademark of 4D SAS.
+
+**Security Note**: Always review skill content before installation. Skills contain prompts and scripts that will be executed by your AI assistant and system. Be cautious when installing skills from untrusted sources, as malicious prompts or code injection is possible.
