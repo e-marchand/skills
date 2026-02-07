@@ -57,12 +57,13 @@ find_tool4d() {
 ### Basic Command
 
 ```bash
-"<tool4d_path>" --project="<project_path>" --startup-method=<method_name> --dataless
+"<tool4d_path>" --project="<project_path>" --startup-method=<method_name> --skip-onstartup --dataless
 ```
 
 Parameters:
 - `--project`: Full path to the `.4DProject` file
 - `--startup-method`: Name of the method to execute (without `.4dm` extension)
+- `--skip-onstartup`: Skip the On Startup method execution (recommended when running specific methods)
 - `--dataless`: Run without a data file (recommended for testing)
 
 ### Example
@@ -71,6 +72,7 @@ Parameters:
 "/Users/eric/Library/Application Support/Code/User/globalStorage/4d.4d-analyzer/tool4d/21/100301/tool4d.app/Contents/MacOS/tool4d" \
     --project="/path/to/Project/MyProject.4DProject" \
     --startup-method=test_MyFeature \
+    --skip-onstartup \
     --dataless
 ```
 
