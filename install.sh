@@ -86,6 +86,7 @@ global_dir_for() {
             fi
             ;;
         .codex)  echo "$HOME/.codex/skills" ;;
+        .claude)  echo "$HOME/.claude/skills" ;;
     esac
 }
 
@@ -113,7 +114,7 @@ detect_config_folder() {
 detect_global_folder() {
     local found_folders=()
 
-    for key in ".agent" ".github" ".codex"; do
+    for key in ".agent" ".github" ".codex" ".claude"; do
         local dir
         dir="$(global_dir_for "$key")"
         # Check if the parent structure exists, or if symlink mode will create it
