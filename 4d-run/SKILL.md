@@ -10,7 +10,19 @@ Run 4D project methods using tool4d command-line tool.
 
 ## Finding tool4d
 
-tool4d is typically installed in one of these locations:
+tool4d can be located in two ways:
+
+### 1. Environment Variable (Recommended if custom installation)
+
+Set the `TOOL4D` environment variable to point to the tool4d executable:
+
+```bash
+export TOOL4D="/path/to/tool4d.app/Contents/MacOS/tool4d"
+```
+
+### 2. Auto-discovery from Extension
+
+tool4d is typically installed by the 4D-Analyzer extension in one of these locations:
 - VS Code: `$HOME/Library/Application Support/Code/User/globalStorage/4d.4d-analyzer/tool4d/`
 - Antigravity: `$HOME/Library/Application Support/Antigravity/User/globalStorage/4d.4d-analyzer/tool4d/`
 
@@ -45,12 +57,13 @@ find_tool4d() {
 ### Basic Command
 
 ```bash
-"<tool4d_path>" --project="<project_path>" --startup-method=<method_name> --dataless
+"<tool4d_path>" --project="<project_path>" --startup-method=<method_name> --skip-onstartup --dataless
 ```
 
 Parameters:
 - `--project`: Full path to the `.4DProject` file
 - `--startup-method`: Name of the method to execute (without `.4dm` extension)
+- `--skip-onstartup`: Skip the On Startup method execution (recommended when running specific methods)
 - `--dataless`: Run without a data file (recommended for testing)
 
 ### Example
@@ -59,6 +72,7 @@ Parameters:
 "/Users/eric/Library/Application Support/Code/User/globalStorage/4d.4d-analyzer/tool4d/21/100301/tool4d.app/Contents/MacOS/tool4d" \
     --project="/path/to/Project/MyProject.4DProject" \
     --startup-method=test_MyFeature \
+    --skip-onstartup \
     --dataless
 ```
 

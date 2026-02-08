@@ -8,6 +8,12 @@ license: Apache 2.0
 
 Search for 4D commands by keyword.
 
+## Prerequisites
+
+Requires tool4d to access the `gram.4dsyntax` file:
+- Install [4D-Analyzer extension](https://marketplace.visualstudio.com/items?itemName=4D.4d-analyzer) in VS Code/Antigravity, OR
+- Set `TOOL4D` environment variable to point to tool4d executable
+
 ## Usage
 
 ```bash
