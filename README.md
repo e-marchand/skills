@@ -11,7 +11,7 @@
 | [4d-clean-project](4d-clean-project/SKILL.md) | Clean a 4D project by removing generated files and caches | Python |
 | [4d-create-project](4d-create-project/SKILL.md) | Create a new 4D project from scratch | - |
 | [4d-doc-lookup](4d-doc-lookup/SKILL.md) | Look up 4D documentation for commands, classes, or language concepts | Python |
-| [4d-find-command](4d-find-command/SKILL.md) | Find 4D commands by keyword | [tool4d](#tool4d), Bash |
+| [4d-find-command](4d-find-command/SKILL.md) | Find 4D commands by keyword | [tool4d](#tool4d), Python |
 | [4d-project-info](4d-project-info/SKILL.md) | Analyze a 4D project and produce a structured summary | Python |
 | [4d-publish-github](4d-publish-github/SKILL.md) | Publish a 4D project to GitHub with CI/CD workflows | Python |
 | [4d-publish-gitlab](4d-publish-gitlab/SKILL.md) | Publish a 4D project to GitLab (gitlab.com or self-hosted) | Python |

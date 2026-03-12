@@ -1,6 +1,6 @@
 ---
 name: 4d-find-command
-description: Find 4D commands by keyword. Use this skill when the user wants to search for, find, or discover 4D commands matching a term. Searches the gram.4dsyntax file from tool4d.app to list all matching command names. Filters out deprecated commands.
+description: Find 4D commands by keyword. Use this skill when the user wants to search for, find, or discover 4D commands matching a term. Searches the gram.4dsyntax file from tool4d.app to list matching command names and uses bundled syntax metadata for readable signatures and summaries. Filters out deprecated commands.
 license: Apache 2.0
 ---
 
@@ -17,37 +17,48 @@ Requires tool4d to access the `gram.4dsyntax` file:
 ## Usage
 
 ```bash
-scripts/find_command.sh <search_term> [--verbose]
+python3 scripts/find_command.py <search_term> [--verbose]
 ```
 
 ## Options
 
-- `--verbose` or `-v`: Add category for each command
+- `--verbose` or `-v`: Add category, summary, and parameter details for each command
+- `--summary`: Add summary lines without verbose categories
 
 ## Examples
 
 ```bash
 # Simple search
-scripts/find_command.sh json
+python3 scripts/find_command.py json
 
-# Verbose output with types
-scripts/find_command.sh json --verbose
+# Verbose output with category + parameter details
+python3 scripts/find_command.py json --verbose
+
+# Signature + summary only
+python3 scripts/find_command.py json --summary
 ```
 
 ## Output
 
-Simple mode (signature only):
+Simple mode (typed signature, using bundled 4D syntax metadata when available):
 ```
-JSON Parse(Text) -> Expression
-JSON Stringify(Expression, Text?) -> Text
-JSON Validate(Text, Object?) -> Object
-```
-
-Verbose mode (adds category):
-```
-JSON Parse(Text) -> Expression [JSON]
-JSON Stringify(Expression, Text?) -> Text [JSON]
-JSON Validate(Text, Object?) -> Object [JSON]
+JSON Parse ( jsonString : Text {; type : Integer}{; *} ) : any
+JSON Stringify ( value : Object, any {; *} ) : Text
+JSON Validate ( vJson : Object ; vSchema : Object ) : Object
 ```
 
-Parameters marked with `?` are optional.
+Summary mode:
+```
+JSON Parse ( jsonString : Text {; type : Integer}{; *} ) : any
+  The JSON Parse command parses the contents of a JSON-formatted string and extracts values that you can store in a 4D field or variable.
+```
+
+Verbose mode (adds category, summary, and parameter details):
+```
+JSON Parse ( jsonString : Text {; type : Integer}{; *} ) : any [JSON]
+  The JSON Parse command parses the contents of a JSON-formatted string and extracts values that you can store in a 4D field or variable.
+  jsonString [Text, ->]: JSON string to parse
+  type [Integer, ->]: Type in which to convert the values
+  * [Operator, ->]: Adds line position and offset of each property if returned value is an object
+  result [any, <-]: Values extracted from JSON string
+```

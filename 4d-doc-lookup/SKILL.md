@@ -53,7 +53,7 @@ Use `4d-find-command` to discover command names, then `4d-doc-lookup` to get ful
 
 ```bash
 # Step 1: Find commands
-scripts/find_command.sh json
+python3 scripts/find_command.py json
 
 # Step 2: Look up specific command
 python3 scripts/doc_lookup.py "JSON Parse" --fetch
