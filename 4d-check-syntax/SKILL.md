@@ -95,7 +95,7 @@ The JSON is output directly to system standard output via LOG EVENT.
 
 ```bash
 # Find tool4d
-TOOL4D=$(".claude/skills/4d-run/scripts/find_tool4d.sh")
+TOOL4D=$(python3 ".claude/skills/4d-run/scripts/find_tool4d.py")
 
 # Run compilation and parse JSON result
 OUTPUT=$("$TOOL4D" --project="/path/to/Project/MyProject.4DProject" --startup-method=_compile --dataless 2>&1)

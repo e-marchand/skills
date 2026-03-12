@@ -7,7 +7,7 @@
 | Skill | Description | Requirements |
 |-------|-------------|--------------|
 | [4d-add-dependency](4d-add-dependency/SKILL.md) | Add dependencies to a 4D project | Python |
-| [4d-check-syntax](4d-check-syntax/SKILL.md) | Compile a 4D project to check for syntax errors | [too4d](#tool4d) |
+| [4d-check-syntax](4d-check-syntax/SKILL.md) | Compile a 4D project to check for syntax errors | [tool4d](#tool4d) |
 | [4d-clean-project](4d-clean-project/SKILL.md) | Clean a 4D project by removing generated files and caches | Python |
 | [4d-create-project](4d-create-project/SKILL.md) | Create a new 4D project from scratch | - |
 | [4d-doc-lookup](4d-doc-lookup/SKILL.md) | Look up 4D documentation for commands, classes, or language concepts | Python |
@@ -15,7 +15,7 @@
 | [4d-project-info](4d-project-info/SKILL.md) | Analyze a 4D project and produce a structured summary | Python |
 | [4d-publish-github](4d-publish-github/SKILL.md) | Publish a 4D project to GitHub with CI/CD workflows | Python |
 | [4d-publish-gitlab](4d-publish-gitlab/SKILL.md) | Publish a 4D project to GitLab (gitlab.com or self-hosted) | Python |
-| [4d-run](4d-run/SKILL.md) | Run a 4D method using tool4d command-line tool | [tool4d](#tool4d), Bash |
+| [4d-run](4d-run/SKILL.md) | Run a 4D method with tool4d or a user-provided 4D runtime path | [tool4d](#tool4d) or 4D runtime, Python |
 | [4d-validate-form](4d-validate-form/SKILL.md) | Validate a .4DForm file against JSON schema | Python |
 
 ## Installation
@@ -70,7 +70,16 @@ Copy the skill folders to the appropriate location for your AI assistant:
 
 ### tool4d
 
-Required by: [4d-run](4d-run/SKILL.md), [4d-check-syntax](4d-check-syntax/SKILL.md), [4d-find-command](4d-find-command/SKILL.md)
+Required by: [4d-check-syntax](4d-check-syntax/SKILL.md), [4d-find-command](4d-find-command/SKILL.md). Also used by [4d-run](4d-run/SKILL.md) when a dataless tool4d run is appropriate.
+
+### 4D.app
+
+Optional for: [4d-run](4d-run/SKILL.md) when the method needs a real database or runtime features not available in tool4d.
+
+The skill can:
+- Use a user-provided `4D.app` path
+- Use a user-provided `4D.exe` path on Windows
+- Kill the launched process after a timeout if the startup method does not call `QUIT 4D`
 
 **Option 1: Install via Extension (Recommended)**
 

@@ -1,20 +1,29 @@
 ---
 name: 4d-run
-description: Run a 4D method using tool4d command-line tool. Use this skill when the user wants to execute, test, or run a 4D project method. Automatically finds tool4d.app in standard locations (VS Code extensions, Antigravity). Supports running any project method with --dataless mode for testing without data file.
+description: Run a 4D project method. Use tool4d by default for fast dataless execution, and fall back to a user-provided 4D executable path when the method needs a real database or runtime features unavailable in tool4d. Includes Python helpers for macOS and Windows.
 license: Apache 2.0
 ---
 
 # 4D Method Runner
 
-Run 4D project methods using tool4d command-line tool.
+Run a 4D project method with the right runtime.
+
+## Choose the Runtime First
+
+- Use `tool4d` for most test-like runs, especially when `--dataless` is acceptable.
+- If it is unclear whether the method needs the full runtime, try `tool4d` first. If that run fails for reasons that look specific to `tool4d` or missing database/runtime support, then switch to the full 4D runtime.
+- Use the full 4D runtime when the method depends on a real data file, database state, UI/runtime features missing from `tool4d`, or the user explicitly says `tool4d` is insufficient.
+- Do not try to discover the 4D runtime automatically. Ask the user for the path to `4D.app`, the inner `4D` binary, or `4D.exe`.
+
+Prefer this fallback strategy because it is usually faster than deciding up front from incomplete context.
 
 ## Finding tool4d
 
 tool4d can be located in two ways:
 
-### 1. Environment Variable (Recommended if custom installation)
+### 1. Environment Variable
 
-Set the `TOOL4D` environment variable to point to the tool4d executable:
+Set `TOOL4D` to the tool4d executable:
 
 ```bash
 export TOOL4D="/path/to/tool4d.app/Contents/MacOS/tool4d"
@@ -26,63 +35,82 @@ tool4d is typically installed by the 4D-Analyzer extension in one of these locat
 - VS Code: `$HOME/Library/Application Support/Code/User/globalStorage/4d.4d-analyzer/tool4d/`
 - Antigravity: `$HOME/Library/Application Support/Antigravity/User/globalStorage/4d.4d-analyzer/tool4d/`
 
-Within these directories, versions are stored in indexed folders (e.g., `21/100301/`). Always use the latest version available.
-
-### Discovery Script
+Use `scripts/find_tool4d.py` to return the newest installed executable.
 
 ```bash
-# Find tool4d in standard locations, return latest version
-find_tool4d() {
-    local search_paths=(
-        "$HOME/Library/Application Support/Code/User/globalStorage/4d.4d-analyzer/tool4d"
-        "$HOME/Library/Application Support/Antigravity/User/globalStorage/4d.4d-analyzer/tool4d/"
-    )
-
-    for base_path in "${search_paths[@]}"; do
-        if [ -d "$base_path" ]; then
-            # Find latest tool4d.app by sorting version folders
-            local tool4d_path=$(find "$base_path" -name "tool4d.app" -type d 2>/dev/null | sort -V | tail -1)
-            if [ -n "$tool4d_path" ]; then
-                echo "$tool4d_path/Contents/MacOS/tool4d"
-                return 0
-            fi
-        fi
-    done
-    return 1
-}
+python3 <skill-dir>/scripts/find_tool4d.py
 ```
 
-## Running a Method
+The script checks:
+- `TOOL4D`
+- Standard 4D-Analyzer locations on macOS
+- Standard 4D-Analyzer locations on Windows under `%APPDATA%` and `%LOCALAPPDATA%`
 
-### Basic Command
+## Running with tool4d
 
 ```bash
-"<tool4d_path>" --project="<project_path>" --startup-method=<method_name> --skip-onstartup --dataless
+"<tool4d_path>" --project="<project_path>" --startup-method="<method_name>" --skip-onstartup --dataless
 ```
 
 Parameters:
 - `--project`: Full path to the `.4DProject` file
-- `--startup-method`: Name of the method to execute (without `.4dm` extension)
-- `--skip-onstartup`: Skip the On Startup method execution (recommended when running specific methods)
-- `--dataless`: Run without a data file (recommended for testing)
+- `--startup-method`: Method name without `.4dm`
+- `--skip-onstartup`: Skip the database `On Startup`
+- `--dataless`: Run without a data file
 
-### Example
+Example:
 
 ```bash
-"/Users/eric/Library/Application Support/Code/User/globalStorage/4d.4d-analyzer/tool4d/21/100301/tool4d.app/Contents/MacOS/tool4d" \
-    --project="/path/to/Project/MyProject.4DProject" \
-    --startup-method=test_MyFeature \
-    --skip-onstartup \
-    --dataless
+SKILL_DIR="/path/to/4d-run"
+TOOL4D="$(python3 "$SKILL_DIR/scripts/find_tool4d.py")"
+"$TOOL4D" --project="/path/to/MyProject/MyProject.4DProject" --startup-method="test_MyFeature" --skip-onstartup --dataless
+```
+
+## Running with the Full 4D Runtime
+
+Ask the user for the 4D executable path first:
+- macOS bundle: `/Applications/4D.app`
+- macOS binary: `/Applications/4D.app/Contents/MacOS/4D`
+- Windows binary: `C:\Program Files\4D\4D.exe`
+
+Then run the helper:
+
+```bash
+SKILL_DIR="/path/to/4d-run"
+python3 "$SKILL_DIR/scripts/run_with_4d.py" \
+    "/Applications/4D.app" \
+    "/path/to/MyProject/MyProject.4DProject" \
+    "test_UsesDatabase"
+```
+
+`run_with_4d.py` launches the runtime, waits for it to exit, and kills it after `30` seconds by default if it is still running.
+
+Important:
+- Prefer startup methods that call `QUIT 4D` when the work is complete.
+- If the method does not call `QUIT 4D`, the helper script will terminate the process after `FOURD_KILL_AFTER` seconds.
+- Set `FOURD_KILL_AFTER=0` only when you intentionally want to leave 4D running.
+
+Equivalent direct command if you already know the binary path:
+
+```bash
+"C:\Program Files\4D\4D.exe" \
+    --project="/path/to/MyProject/MyProject.4DProject" \
+    --startup-method="test_UsesDatabase" \
+    --skip-onstartup
 ```
 
 ## Output Handling
 
-tool4d output appears on stderr. Common patterns:
+- `tool4d` sends most diagnostic output to stderr.
+- 4D may keep running after the method finishes unless the method explicitly calls `QUIT 4D`.
+- `ALERT` is not reliable for automated runs. Prefer `LOG EVENT` or file output.
 
-- **ALERT calls**: `tool4d.HDLS ([Call of Forbidden Method] ALERT: <message>)`
-- **Assertion failures**: `tool4d.4DRT [-10518] Assert failed: <message>`
-- **Success**: Method completes without error output
+When deciding whether to fall back from `tool4d` to full 4D, treat these as fallback signals:
+- The user already says the method touches the real database.
+- The `tool4d` run fails and the failure points to forbidden methods, unavailable runtime features, UI dependencies, or missing access to the real data file.
+- The `tool4d` run cannot complete the startup method even though the method name and project path are correct.
+
+Do not fall back automatically for ordinary method bugs. If the method itself is wrong, report the failure instead of switching runtimes.
 
 ### Logging from 4D Code
 
@@ -100,7 +128,9 @@ File("/path/to/debug.txt").setText($debugText)
 
 ## Workflow
 
-1. **Find tool4d**: Search standard locations for latest version
-2. **Locate project**: Find the `.4DProject` file in the project directory
-3. **Run method**: Execute with `--dataless` flag
-4. **Parse output**: Check stderr for ALERT messages or errors
+1. Locate the `.4DProject` file.
+2. Decide whether `tool4d` is clearly sufficient, clearly insufficient, or unclear.
+3. If it is unclear, try `tool4d` first because that is usually the fastest path.
+4. If `tool4d` succeeds, keep using it.
+5. If `tool4d` fails for a likely runtime/database limitation, ask the user for the 4D executable path and retry with full 4D.
+6. When using the full runtime, ensure the method calls `QUIT 4D` or use `scripts/run_with_4d.py` so the process gets cleaned up.
