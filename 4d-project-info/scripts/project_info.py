@@ -1,25 +1,76 @@
 #!/usr/bin/env python3
 """Analyze a 4D project and produce a structured summary."""
 
+import argparse
 import json
 import os
 import sys
 import re
 from pathlib import Path
 
+MAX_PROJECT_CANDIDATES = 20
+
+
+def get_project_file(project_dir: Path) -> Path | None:
+    """Return the first .4DProject file in a Project directory."""
+    if not project_dir.is_dir():
+        return None
+    for file_path in sorted(project_dir.glob("*.4DProject")):
+        if file_path.is_file():
+            return file_path
+    return None
+
 
 def find_project_root(start_path: str) -> Path | None:
-    """Walk up to find directory containing a .4DProject file."""
-    p = Path(start_path).resolve()
-    if p.is_file():
-        p = p.parent
-    for d in [p, *p.parents]:
-        project_dir = d / "Project"
-        if project_dir.is_dir():
-            for f in project_dir.iterdir():
-                if f.suffix == ".4DProject":
-                    return d
+    """Resolve a 4D project root from a project root, Project dir, or .4DProject file."""
+    path = Path(start_path).expanduser().resolve()
+
+    if path.is_file():
+        if path.suffix == ".4DProject" and path.parent.name == "Project":
+            return path.parent.parent
+        path = path.parent
+
+    if path.name == "Project" and get_project_file(path):
+        return path.parent
+
+    if get_project_file(path / "Project"):
+        return path
+
+    for directory in [path, *path.parents]:
+        project_dir = directory / "Project"
+        if get_project_file(project_dir):
+            return directory
     return None
+
+
+def find_project_candidates(start_path: str, limit: int = MAX_PROJECT_CANDIDATES) -> list[str]:
+    """Find nearby .4DProject files to help the next run target one explicitly."""
+    path = Path(start_path).expanduser().resolve()
+    search_root = path.parent if path.is_file() else path
+
+    if not search_root.exists():
+        return []
+
+    candidates = []
+    seen = set()
+    try:
+        for scope in [search_root, *search_root.parents]:
+            for project_file in sorted(scope.rglob("*.4DProject")):
+                if not project_file.is_file():
+                    continue
+                project_str = str(project_file)
+                if project_str in seen:
+                    continue
+                seen.add(project_str)
+                candidates.append(project_str)
+                if len(candidates) >= limit:
+                    return candidates
+            if candidates:
+                return candidates
+    except Exception:
+        return candidates
+
+    return candidates
 
 
 def count_files(directory: Path, extension: str) -> list[str]:
@@ -125,16 +176,15 @@ def analyze_settings(project_root: Path) -> dict:
     result = {}
     # .4DProject
     project_dir = project_root / "Project"
-    for f in project_dir.iterdir():
-        if f.suffix == ".4DProject":
-            try:
-                data = json.loads(f.read_text())
-                result["project_file"] = f.name
-                result["compatibility_version"] = data.get("compatibilityVersion")
-                result["tokenized_text"] = data.get("tokenizedText")
-            except Exception:
-                pass
-            break
+    project_file = get_project_file(project_dir)
+    if project_file:
+        try:
+            data = json.loads(project_file.read_text())
+            result["project_file"] = project_file.name
+            result["compatibility_version"] = data.get("compatibilityVersion")
+            result["tokenized_text"] = data.get("tokenizedText")
+        except Exception:
+            pass
 
     # settings.4DSettings
     settings_file = project_dir / "Sources" / "settings.4DSettings"
@@ -146,11 +196,153 @@ def analyze_settings(project_root: Path) -> dict:
     return result
 
 
+def parse_args() -> argparse.Namespace:
+    """Parse CLI arguments."""
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("path", nargs="?", default=os.getcwd(), help="Path inside a 4D project, the project root, Project/, or a .4DProject file")
+    parser.add_argument("--compact", action="store_true", help="Return compact JSON with names and counts instead of full details")
+    parser.add_argument(
+        "--format",
+        default="json",
+        help="Output format: json, human, or terse (aliases: text, token, tokens, toon)",
+    )
+    return parser.parse_args()
+
+
+def normalize_output_format(value: str) -> str:
+    """Normalize format aliases to canonical output modes."""
+    normalized = value.strip().lower()
+    aliases = {
+        "json": "json",
+        "human": "human",
+        "text": "human",
+        "terse": "terse",
+        "token": "terse",
+        "tokens": "terse",
+        "toon": "terse",
+    }
+    if normalized not in aliases:
+        raise ValueError(f"Unsupported format: {value}")
+    return aliases[normalized]
+
+
+def format_dependencies_human(dependencies: dict) -> str:
+    """Render dependencies in a concise human-readable form."""
+    if not dependencies.get("file_exists"):
+        return "none"
+    if "error" in dependencies:
+        return f"error: {dependencies['error']}"
+    deps = dependencies.get("dependencies", {})
+    if not deps:
+        return "none"
+    rendered = []
+    for name, config in sorted(deps.items()):
+        if isinstance(config, dict):
+            source = config.get("github") or config.get("url") or "local"
+            version = config.get("tag") or config.get("version")
+            rendered.append(f"{name} ({source}{' @ ' + version if version else ''})")
+        else:
+            rendered.append(f"{name} ({config})")
+    return ", ".join(rendered)
+
+
+def build_compact_report(report: dict, methods: list[dict], classes: list[dict], forms: list[dict]) -> dict:
+    """Return the compact JSON representation."""
+    return {
+        "project_root": report["project_root"],
+        "settings": report["settings"],
+        "summary": report["summary"],
+        "method_names": [m["name"] for m in methods],
+        "class_names": [c["name"] for c in classes],
+        "form_names": [f["name"] for f in forms],
+    }
+
+
+def render_human(report: dict, compact: dict) -> str:
+    """Render a readable multiline summary."""
+    settings = compact["settings"]
+    summary = compact["summary"]
+    lines = [
+        f"Project: {compact['project_root']}",
+        f"Project file: {settings.get('project_file', 'unknown')}",
+        f"Compatibility: {settings.get('compatibility_version', 'unknown')}",
+        f"Tokenized text: {'yes' if settings.get('tokenized_text') else 'no'}",
+        f"Settings file: {'yes' if settings.get('has_settings') else 'no'}",
+        f"Summary: methods={summary['methods_count']}, classes={summary['classes_count']}, forms={summary['forms_count']}, db_methods={len(summary['database_methods'])}, catalog={'yes' if summary['has_catalog'] else 'no'}, code_lines={summary['total_code_lines']}",
+        f"Database methods: {', '.join(summary['database_methods']) if summary['database_methods'] else 'none'}",
+        f"Dependencies: {format_dependencies_human(summary['dependencies'])}",
+        f"Methods: {', '.join(compact['method_names']) if compact['method_names'] else 'none'}",
+        f"Classes: {', '.join(compact['class_names']) if compact['class_names'] else 'none'}",
+        f"Forms: {', '.join(compact['form_names']) if compact['form_names'] else 'none'}",
+    ]
+    return "\n".join(lines)
+
+
+def render_terse(compact: dict) -> str:
+    """Render a token-light summary."""
+    settings = compact["settings"]
+    summary = compact["summary"]
+    db_methods = ",".join(summary["database_methods"]) if summary["database_methods"] else "-"
+    methods = ",".join(compact["method_names"]) if compact["method_names"] else "-"
+    classes = ",".join(compact["class_names"]) if compact["class_names"] else "-"
+    forms = ",".join(compact["form_names"]) if compact["form_names"] else "-"
+    deps = format_dependencies_human(summary["dependencies"])
+    return "\n".join(
+        [
+            f"root={compact['project_root']}",
+            f"project={settings.get('project_file', '?')} compat={settings.get('compatibility_version', '?')} tokenized={1 if settings.get('tokenized_text') else 0} settings={1 if settings.get('has_settings') else 0}",
+            f"counts m={summary['methods_count']} c={summary['classes_count']} f={summary['forms_count']} db={len(summary['database_methods'])} catalog={1 if summary['has_catalog'] else 0} lines={summary['total_code_lines']}",
+            f"db_methods={db_methods}",
+            f"methods={methods}",
+            f"classes={classes}",
+            f"forms={forms}",
+            f"deps={deps}",
+        ]
+    )
+
+
+def render_error(error: dict, output_format: str) -> str:
+    """Render error payload in the requested format."""
+    if output_format == "json":
+        return json.dumps(error, indent=2)
+
+    lines = [
+        error["error"],
+        f"searched_from: {error['searched_from']}",
+        error["message"],
+    ]
+    candidates = error.get("project_candidates", [])
+    if candidates:
+        lines.append("project_candidates:")
+        lines.extend(candidates)
+    else:
+        lines.append("project_candidates: none")
+    if error.get("project_candidates_truncated"):
+        lines.append("project_candidates_truncated: true")
+    return "\n".join(lines)
+
+
 def main():
-    start = sys.argv[1] if len(sys.argv) > 1 else os.getcwd()
+    args = parse_args()
+    start = args.path
+    try:
+        output_format = normalize_output_format(args.format)
+    except ValueError as exc:
+        print(str(exc), file=sys.stderr)
+        sys.exit(2)
+
     root = find_project_root(start)
     if not root:
-        print(json.dumps({"error": "No 4D project found", "searched_from": start}), file=sys.stdout)
+        candidates = find_project_candidates(start)
+        error = {
+            "error": "No 4D project found",
+            "searched_from": start,
+            "message": "Pass a project root, Project directory, or one of the suggested .4DProject files on the next run.",
+            "project_candidates": candidates,
+        }
+        if len(candidates) == MAX_PROJECT_CANDIDATES:
+            error["project_candidates_truncated"] = True
+        print(render_error(error, output_format), file=sys.stdout)
         sys.exit(1)
 
     sources_dir = root / "Project" / "Sources"
@@ -206,17 +398,13 @@ def main():
         "forms": forms,
     }
 
-    # Output format
-    fmt = "--compact" if "--compact" in sys.argv else "--full"
-    if fmt == "--compact":
-        compact = {
-            "project_root": report["project_root"],
-            "settings": report["settings"],
-            "summary": report["summary"],
-            "method_names": [m["name"] for m in methods],
-            "class_names": [c["name"] for c in classes],
-            "form_names": [f["name"] for f in forms],
-        }
+    compact = build_compact_report(report, methods, classes, forms)
+
+    if output_format == "human":
+        print(render_human(report, compact))
+    elif output_format == "terse":
+        print(render_terse(compact))
+    elif args.compact:
         print(json.dumps(compact, indent=2))
     else:
         print(json.dumps(report, indent=2))

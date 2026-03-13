@@ -10,15 +10,18 @@ Analyze a 4D project and produce a JSON summary of its structure.
 ## Usage
 
 ```bash
-python3 scripts/project_info.py [path] [--compact]
+python3 scripts/project_info.py [path] [--format json|human|terse] [--compact]
 ```
 
-- `path`: Any path inside a 4D project (auto-detects project root). Defaults to current directory.
-- `--compact`: Output only names and counts (fewer tokens). Use by default unless the user needs full detail.
+- `path`: Any path inside a 4D project, the project root itself, the `Project/` directory, or a direct path to the `.4DProject` file. Defaults to current directory.
+- `--format`: `json` for structured output, `human` for a readable text summary, `terse` for a token-light text summary. Aliases: `text`, `token`, `tokens`, `toon`.
+- `--compact`: For `json` output, return only names and counts instead of full per-file details.
+
+If no project root can be resolved, the script still exits with an error, but it also returns a list of nearby `.4DProject` files to use explicitly on the next run.
 
 ## Output
 
-### Compact mode (default, recommended)
+### JSON compact mode
 
 ```json
 {
@@ -39,7 +42,15 @@ python3 scripts/project_info.py [path] [--compact]
 }
 ```
 
-### Full mode
+### Human mode
+
+Returns a short readable summary with project settings, counts, and comma-separated names.
+
+### Terse mode
+
+Returns the same key facts in a token-light text format.
+
+### JSON full mode
 
 Adds per-method line counts and per-class details (properties, functions, extends).
 
