@@ -1,0 +1,81 @@
+{
+	"meta": {
+		"format": "4d-layout",
+		"version": 1
+	},
+	"form": {
+		"windowTitle": "Relational Example",
+		"destination": "detailScreen",
+		"rightMargin": 20,
+		"bottomMargin": 20,
+		"width": 400,
+		"height": 300
+	},
+	"pages": [
+		{
+			"elements": [
+				{
+					"id": "input_email",
+					"type": "input",
+					"props": {
+						"placeholder": "Email"
+					},
+					"layout": {
+						"frame": {
+							"top": 40,
+							"left": 20,
+							"width": 220,
+							"height": 24
+						}
+					}
+				},
+				{
+					"id": "submitButton",
+					"type": "button",
+					"props": {
+						"text": "Submit"
+					},
+					"layout": {
+						"placement": "below(input_email)",
+						"align": "left",
+						"marginTop": 12,
+						"frame": {
+							"width": 150,
+							"height": 30
+						}
+					}
+				},
+				{
+					"id": "cancelButton",
+					"type": "button",
+					"props": {
+						"text": "Cancel"
+					},
+					"layout": {
+						"placement": "rightOf(submitButton)",
+						"align": "top",
+						"marginLeft": 8,
+						"frame": {
+							"width": 150,
+							"height": 30
+						}
+					}
+				},
+				{
+					"id": "centeredTitle",
+					"type": "text",
+					"props": {
+						"text": "Centered"
+					},
+					"layout": {
+						"placement": "centeredIn(parent)",
+						"frame": {
+							"width": 100,
+							"height": 20
+						}
+					}
+				}
+			]
+		}
+	]
+}

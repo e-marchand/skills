@@ -1,0 +1,537 @@
+{
+	"$4d": {
+		"version": "1",
+		"kind": "form"
+	},
+	"windowSizingX": "variable",
+	"windowSizingY": "variable",
+	"windowMinWidth": 0,
+	"windowMinHeight": 0,
+	"windowMaxWidth": 32767,
+	"windowMaxHeight": 32767,
+	"rightMargin": 20,
+	"bottomMargin": 20,
+	"events": [
+		"onLoad",
+		"onPageChange",
+		"onValidate",
+		"onClick",
+		"onDoubleClick",
+		"onOutsideCall",
+		"onBeginDragOver",
+		"onDragOver",
+		"onDrop",
+		"onAfterKeystroke",
+		"onMenuSelect",
+		"onPluginArea",
+		"onAfterEdit",
+		"onTimer",
+		"onBoundVariableChange"
+	],
+	"windowTitle": "OpenAI Demo",
+	"destination": "detailScreen",
+	"pages": [
+		{
+			"objects": {
+				"Tab Control": {
+					"type": "tab",
+					"text": "Tab control",
+					"top": 8,
+					"left": 8,
+					"width": 788,
+					"height": 719,
+					"labelsPlacement": "top",
+					"labels": [
+						"Chat",
+						"Image",
+						"Vision",
+						"Moderation",
+						"Models",
+						"Embeddings",
+						"ChatHelper",
+						"Files"
+					],
+					"action": "gotoPage"
+				},
+				"userPrompt": {
+					"type": "input",
+					"left": 13,
+					"top": 747,
+					"width": 694,
+					"height": 33,
+					"dataSource": "Form:C1466.prompt",
+					"events": [
+						"onValidate"
+					],
+					"hideFocusRing": false,
+					"placeholder": "Talk to your assistant"
+				},
+				"SendButton": {
+					"type": "button",
+					"text": "➤✨",
+					"top": 747,
+					"left": 719,
+					"width": 77,
+					"height": 33,
+					"events": [
+						"onClick"
+					],
+					"method": "ObjectMethods/SendButton.4dm",
+					"style": "regular"
+				},
+				"ModelDropdown": {
+					"type": "dropdown",
+					"left": 25,
+					"top": 613,
+					"width": 756,
+					"height": 28,
+					"events": [
+						"onDataChange"
+					],
+					"dataSource": "Form:C1466.models",
+					"dataSourceTypeHint": "object"
+				}
+			}
+		},
+		{
+			"objects": {
+				"Input": {
+					"type": "input",
+					"left": 28,
+					"top": 48,
+					"width": 751,
+					"height": 545,
+					"dataSource": "Form:C1466.chat",
+					"enterable": false,
+					"focusable": false,
+					"scrollbarVertical": "automatic",
+					"scrollbarHorizontal": "automatic"
+				},
+				"ChatStreamButton": {
+					"type": "checkbox",
+					"text": "Stream",
+					"top": 661,
+					"left": 27,
+					"width": 112,
+					"height": 30,
+					"events": [
+						"onClick"
+					],
+					"dataSource": "Form:C1466.stream"
+				},
+				"ChatToolButton": {
+					"type": "checkbox",
+					"text": "Tools",
+					"top": 661,
+					"left": 143,
+					"width": 112,
+					"height": 30,
+					"events": [
+						"onClick"
+					],
+					"dataSource": "Form:C1466.tools"
+				}
+			}
+		},
+		{
+			"objects": {
+				"Input1": {
+					"type": "input",
+					"left": 139,
+					"top": 64,
+					"width": 512,
+					"height": 512,
+					"dataSourceTypeHint": "picture",
+					"dataSource": "Form:C1466.picture",
+					"sizingX": "fixed",
+					"pictureFormat": "scaled"
+				}
+			}
+		},
+		{
+			"objects": {
+				"Input2": {
+					"type": "input",
+					"left": 28,
+					"top": 48,
+					"width": 751,
+					"height": 545,
+					"dataSource": "Form:C1466.vision",
+					"enterable": false,
+					"focusable": false,
+					"scrollbarVertical": "automatic",
+					"scrollbarHorizontal": "automatic"
+				},
+				"VisionFileInput": {
+					"type": "input",
+					"left": 27,
+					"top": 668,
+					"width": 754,
+					"height": 33,
+					"dataSource": "Form:C1466.visionFile.path",
+					"enterable": false,
+					"events": [
+						"onClick",
+						"onDrop"
+					],
+					"method": "ObjectMethods/VisionFileInput.4dm",
+					"placeholder": "Click to select on image to analyse"
+				}
+			}
+		},
+		{
+			"objects": {
+				"Input3": {
+					"type": "input",
+					"left": 28,
+					"top": 48,
+					"width": 751,
+					"height": 545,
+					"dataSource": "Form:C1466.moderation",
+					"enterable": false,
+					"focusable": false,
+					"scrollbarVertical": "automatic",
+					"scrollbarHorizontal": "automatic"
+				}
+			}
+		},
+		{
+			"objects": {
+				"List Box": {
+					"type": "listbox",
+					"left": 25,
+					"top": 62,
+					"width": 756,
+					"height": 526,
+					"events": [
+						"onClick",
+						"onHeaderClick",
+						"onDataChange",
+						"onSelectionChange"
+					],
+					"dataSource": "Form:C1466.modelsRemote",
+					"listboxType": "collection",
+					"columns": [
+						{
+							"header": {
+								"text": "ID",
+								"name": "Header1"
+							},
+							"name": "Column1",
+							"footer": {
+								"name": "Footer1"
+							},
+							"dataSource": "This:C1470.id",
+							"width": 349
+						},
+						{
+							"header": {
+								"name": "Header2",
+								"text": "Created"
+							},
+							"name": "Column2",
+							"footer": {
+								"name": "Footer2"
+							},
+							"dataSource": "This:C1470.created",
+							"width": 150
+						},
+						{
+							"header": {
+								"name": "Header3",
+								"text": "object"
+							},
+							"name": "Column3",
+							"footer": {
+								"name": "Footer3"
+							},
+							"dataSource": "This:C1470.object",
+							"width": 90,
+							"textAlign": "right"
+						},
+						{
+							"header": {
+								"name": "Header4",
+								"text": "owned_by"
+							},
+							"name": "Column4",
+							"footer": {
+								"name": "Footer4"
+							},
+							"dataSource": "This:C1470.owned_by",
+							"width": 152,
+							"textAlign": "right"
+						}
+					]
+				}
+			}
+		},
+		{
+			"objects": {
+				"Input4": {
+					"type": "input",
+					"left": 28,
+					"top": 48,
+					"width": 751,
+					"height": 545,
+					"dataSource": "Form:C1466.embeddings",
+					"enterable": false,
+					"focusable": false,
+					"scrollbarVertical": "visible"
+				}
+			}
+		},
+		{
+			"objects": {
+				"List Box1": {
+					"type": "listbox",
+					"left": 30,
+					"top": 48,
+					"width": 219,
+					"height": 528,
+					"events": [
+						"onClick",
+						"onHeaderClick",
+						"onDataChange",
+						"onSelectionChange"
+					],
+					"listboxType": "collection",
+					"dataSource": "Form:C1466.chats",
+					"currentItemSource": "Form:C1466.currentChat",
+					"currentItemPositionSource": "Form:C1466.currentChatIndex",
+					"columns": [
+						{
+							"header": {
+								"text": "Chats",
+								"name": "Header5"
+							},
+							"name": "Column5",
+							"footer": {
+								"name": "Footer5"
+							},
+							"width": 205,
+							"dataSource": "This:C1470.name"
+						}
+					]
+				},
+				"Rectangle": {
+					"type": "rectangle",
+					"top": 583,
+					"left": 30,
+					"width": 219,
+					"height": 25,
+					"fill": "automatic",
+					"stroke": "transparent",
+					"strokeWidth": 0,
+					"strokeDashArray": [
+						1,
+						2
+					]
+				},
+				"CreateChatHelper": {
+					"type": "button",
+					"text": "+",
+					"top": 589,
+					"left": 33,
+					"width": 19,
+					"height": 12,
+					"events": [
+						"onClick"
+					],
+					"method": "ObjectMethods/CreateChatHelper.4dm"
+				},
+				"DeleteChatHelper": {
+					"type": "button",
+					"text": "-",
+					"top": 589,
+					"left": 54,
+					"width": 19,
+					"height": 12,
+					"events": [
+						"onClick"
+					],
+					"method": "ObjectMethods/DeleteChatHelper.4dm"
+				},
+				"List Box2": {
+					"type": "listbox",
+					"left": 264,
+					"top": 48,
+					"width": 508,
+					"height": 538,
+					"events": [
+						"onClick",
+						"onHeaderClick",
+						"onDataChange",
+						"onSelectionChange"
+					],
+					"listboxType": "collection",
+					"dataSource": "Form:C1466.currentChat.chat.messages",
+					"showFooters": false,
+					"rowHeight": "1em",
+					"rowHeightAutoMin": "1em",
+					"rowHeightAutoMax": "1600em",
+					"columns": [
+						{
+							"header": {
+								"name": "Header7",
+								"text": "",
+								"tooltip": "Role"
+							},
+							"name": "Column7",
+							"footer": {
+								"name": "Footer7"
+							},
+							"dataSource": "Form:C1466.roleEmoticon(This:C1470.role)",
+							"width": 27,
+							"alternateFill": "automaticAlternate",
+							"enterable": false
+						},
+						{
+							"header": {
+								"text": "Messages",
+								"name": "Header6"
+							},
+							"name": "Column6",
+							"footer": {
+								"name": "Footer6"
+							},
+							"width": 494,
+							"dataSource": "This:C1470.text",
+							"alternateFill": "automaticAlternate",
+							"rowHeightAuto": true,
+							"enterable": false,
+							"truncateMode": "none",
+							"wordwrap": "normal"
+						}
+					]
+				}
+			}
+		},
+		{
+			"objects": {
+				"FilesList": {
+					"type": "listbox",
+					"left": 25,
+					"top": 48,
+					"width": 370,
+					"height": 526,
+					"events": [
+						"onClick",
+						"onHeaderClick",
+						"onDataChange",
+						"onSelectionChange"
+					],
+					"dataSource": "Form:C1466.filesRemote",
+					"currentItemSource": "Form:C1466.selectedFile",
+					"listboxType": "collection",
+					"columns": [
+						{
+							"header": {
+								"text": "ID",
+								"name": "HeaderFileId"
+							},
+							"name": "ColumnFileId",
+							"footer": {
+								"name": "FooterFileId"
+							},
+							"dataSource": "This:C1470.id",
+							"width": 120
+						},
+						{
+							"header": {
+								"name": "HeaderFileName",
+								"text": "Filename"
+							},
+							"name": "ColumnFileName",
+							"footer": {
+								"name": "FooterFileName"
+							},
+							"dataSource": "This:C1470.filename",
+							"width": 130
+						},
+						{
+							"header": {
+								"name": "HeaderFilePurpose",
+								"text": "Purpose"
+							},
+							"name": "ColumnFilePurpose",
+							"footer": {
+								"name": "FooterFilePurpose"
+							},
+							"dataSource": "This:C1470.purpose",
+							"width": 105
+						}
+					]
+				},
+				"UploadFileButton": {
+					"type": "button",
+					"text": "📤 Upload File",
+					"top": 669,
+					"left": 25,
+					"width": 120,
+					"height": 30,
+					"events": [
+						"onClick"
+					],
+					"method": "ObjectMethods/UploadFileButton.4dm"
+				},
+				"DeleteFileButton": {
+					"type": "button",
+					"text": "🗑️ Delete Selected File",
+					"top": 669,
+					"left": 145,
+					"width": 165,
+					"height": 30,
+					"events": [
+						"onClick"
+					],
+					"method": "ObjectMethods/DeleteFileButton.4dm"
+				},
+				"RefreshFilesButton": {
+					"type": "button",
+					"text": "🔄 Refresh",
+					"top": 669,
+					"left": 672,
+					"width": 100,
+					"height": 30,
+					"events": [
+						"onClick"
+					],
+					"method": "ObjectMethods/RefreshFilesButton.4dm"
+				},
+				"FileChatResponse": {
+					"type": "input",
+					"left": 410,
+					"top": 85,
+					"width": 371,
+					"height": 473,
+					"dataSource": "Form:C1466.fileChat",
+					"enterable": false,
+					"focusable": false,
+					"scrollbarVertical": "automatic",
+					"scrollbarHorizontal": "automatic",
+					"multiline": "yes"
+				},
+				"FileChatLabel": {
+					"type": "text",
+					"text": "💬 Chat about selected file:",
+					"top": 48,
+					"left": 410,
+					"width": 371,
+					"height": 17,
+					"fontWeight": "bold",
+					"fontSize": 13
+				}
+			}
+		}
+	],
+	"geometryStamp": 240,
+	"editor": {
+		"activeView": "View 1",
+		"defaultView": "View 1",
+		"views": {
+			"View 1": {}
+		}
+	},
+	"method": "method.4dm"
+}

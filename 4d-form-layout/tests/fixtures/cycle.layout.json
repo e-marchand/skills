@@ -1,0 +1,46 @@
+{
+	"meta": {
+		"format": "4d-layout",
+		"version": 1
+	},
+	"form": {
+		"windowTitle": "Cycle",
+		"destination": "detailScreen",
+		"width": 400,
+		"height": 200
+	},
+	"pages": [
+		{
+			"elements": [
+				{
+					"id": "first",
+					"type": "button",
+					"props": {
+						"text": "First"
+					},
+					"layout": {
+						"placement": "below(second)",
+						"frame": {
+							"width": 100,
+							"height": 24
+						}
+					}
+				},
+				{
+					"id": "second",
+					"type": "button",
+					"props": {
+						"text": "Second"
+					},
+					"layout": {
+						"placement": "below(first)",
+						"frame": {
+							"width": 100,
+							"height": 24
+						}
+					}
+				}
+			]
+		}
+	]
+}

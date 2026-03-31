@@ -1,0 +1,32 @@
+{
+	"meta": {
+		"format": "4d-layout",
+		"version": 1
+	},
+	"form": {
+		"windowTitle": "Invalid Target",
+		"destination": "detailScreen",
+		"width": 400,
+		"height": 200
+	},
+	"pages": [
+		{
+			"elements": [
+				{
+					"id": "submitButton",
+					"type": "button",
+					"props": {
+						"text": "Submit"
+					},
+					"layout": {
+						"placement": "below(missingField)",
+						"frame": {
+							"width": 120,
+							"height": 24
+						}
+					}
+				}
+			]
+		}
+	]
+}

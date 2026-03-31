@@ -1,0 +1,40 @@
+{
+	"meta": {
+		"format": "4d-layout",
+		"version": 1
+	},
+	"form": {
+		"windowTitle": "Shared Page Example",
+		"destination": "detailScreen",
+		"width": 320,
+		"height": 180
+	},
+	"pages": [
+		{
+			"name": "page 0",
+			"role": "shared",
+			"elements": []
+		},
+		{
+			"name": "page 1",
+			"role": "page",
+			"elements": [
+				{
+					"id": "title",
+					"type": "text",
+					"props": {
+						"text": "Visible page content"
+					},
+					"layout": {
+						"frame": {
+							"top": 24,
+							"left": 24,
+							"width": 180,
+							"height": 24
+						}
+					}
+				}
+			]
+		}
+	]
+}

@@ -1,0 +1,75 @@
+{
+	"meta": {
+		"format": "4d-layout",
+		"version": 1
+	},
+	"form": {
+		"windowTitle": "Mixed Example",
+		"destination": "detailScreen",
+		"rightMargin": 10,
+		"bottomMargin": 10,
+		"width": 420,
+		"height": 280
+	},
+	"pages": [
+		{
+			"elements": [
+				{
+					"id": "email",
+					"type": "input",
+					"props": {
+						"placeholder": "Email"
+					},
+					"layout": {
+						"frame": {
+							"top": 24,
+							"left": 24,
+							"width": 220,
+							"height": 24
+						}
+					}
+				},
+				{
+					"id": "saveButton",
+					"type": "button",
+					"props": {
+						"text": "Save"
+					},
+					"layout": {
+						"placement": "below(email)",
+						"align": "left",
+						"marginTop": 8,
+						"frame": {
+							"width": 100,
+							"height": 28
+						}
+					}
+				}
+			],
+			"entryOrder": [
+				"email",
+				"saveButton"
+			]
+		},
+		{
+			"elements": [
+				{
+					"id": "notes",
+					"type": "input",
+					"props": {
+						"placeholder": "Notes",
+						"scrollbarVertical": "automatic"
+					},
+					"layout": {
+						"frame": {
+							"top": 40,
+							"left": 30,
+							"width": 300,
+							"height": 120
+						}
+					}
+				}
+			]
+		}
+	]
+}

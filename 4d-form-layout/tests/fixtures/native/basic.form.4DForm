@@ -1,0 +1,45 @@
+{
+	"$4d": {
+		"version": "1",
+		"kind": "form"
+	},
+	"destination": "detailScreen",
+	"windowTitle": "AI Harness Basic",
+	"rightMargin": 20,
+	"bottomMargin": 20,
+	"events": [
+		"onLoad",
+		"onClick"
+	],
+	"pages": [
+		{
+			"objects": {
+				"TitleText": {
+					"type": "text",
+					"top": 20,
+					"left": 20,
+					"width": 240,
+					"height": 24,
+					"text": "AI harness smoke test",
+					"fontSize": 18
+				},
+				"SubtitleText": {
+					"type": "text",
+					"top": 56,
+					"left": 20,
+					"width": 260,
+					"height": 20,
+					"text": "Standalone .4DForm render"
+				},
+				"PrimaryButton": {
+					"type": "button",
+					"top": 100,
+					"left": 20,
+					"width": 150,
+					"height": 30,
+					"text": "Render me"
+				}
+			}
+		}
+	]
+}

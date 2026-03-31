@@ -1,0 +1,61 @@
+{
+	"meta": {
+		"format": "4d-layout",
+		"version": 1
+	},
+	"form": {
+		"windowTitle": "Ignored Overlap",
+		"destination": "detailScreen",
+		"width": 320,
+		"height": 180
+	},
+	"pages": [
+		{
+			"name": "page 0",
+			"role": "shared",
+			"elements": []
+		},
+		{
+			"name": "page 1",
+			"role": "page",
+			"elements": [
+				{
+					"id": "fieldWhenVisible",
+					"type": "input",
+					"props": {
+						"placeholder": "Visible in one state"
+					},
+					"layout": {
+						"frame": {
+							"top": 24,
+							"left": 24,
+							"width": 180,
+							"height": 24
+						}
+					}
+				},
+				{
+					"id": "fieldWhenHidden",
+					"type": "input",
+					"props": {
+						"placeholder": "Visible in another state"
+					},
+					"validation": {
+						"ignoreRules": [
+							"no_overlap"
+						],
+						"notes": "Alternative state control that intentionally shares the same frame."
+					},
+					"layout": {
+						"frame": {
+							"top": 24,
+							"left": 24,
+							"width": 180,
+							"height": 24
+						}
+					}
+				}
+			]
+		}
+	]
+}

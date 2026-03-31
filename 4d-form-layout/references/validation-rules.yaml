@@ -1,0 +1,23 @@
+meta:
+  format: "4d-validation"
+  version: 1
+
+defaults:
+  spacing:
+    allowedValues: [4, 8, 10, 12, 16, 24]
+
+rules:
+  - name: "shared_page_required"
+    check: "page_0_exists_and_is_shared_and_total_pages_gte_2"
+
+  - name: "no_overlap"
+    check: "frame_intersection == false"
+
+  - name: "consistent_spacing"
+    check: "spacing in allowedValues"
+
+  - name: "alignment_consistency"
+    check: "same_left_for_group"
+
+  - name: "inside_bounds"
+    check: "frame within form"

@@ -1,0 +1,4 @@
+interface:
+  display_name: "4D Form Layout"
+  short_description: "LLM-friendly 4D form layout flow."
+  default_prompt: "Use $4d-form-layout to author or convert a 4D form through the intermediate layout JSON format."

@@ -1,0 +1,379 @@
+{
+	"meta": {
+		"format": "4d-layout",
+		"version": 1
+	},
+	"form": {
+		"windowTitle": "LayoutProject Settings",
+		"destination": "detailScreen",
+		"windowSizingX": "fixed",
+		"windowSizingY": "fixed",
+		"windowMinWidth": 760,
+		"windowMinHeight": 680,
+		"windowMaxWidth": 760,
+		"windowMaxHeight": 680,
+		"rightMargin": 20,
+		"bottomMargin": 20,
+		"width": 760,
+		"height": 680
+	},
+	"pages": [
+		{
+			"name": "page 0",
+			"role": "shared",
+			"elements": []
+		},
+		{
+			"name": "page 1",
+			"role": "page",
+			"elements": [
+				{
+					"id": "settingsTitle",
+					"type": "text",
+					"props": {
+						"text": "LayoutProject Settings",
+						"fontSize": 24,
+						"fontWeight": "bold",
+						"textAlign": "center"
+					},
+					"layout": {
+						"frame": {
+							"top": 28,
+							"left": 190,
+							"width": 380,
+							"height": 34
+						}
+					}
+				},
+				{
+					"id": "versionLabel",
+					"type": "text",
+					"props": {
+						"text": "macOS Version  2.2.1",
+						"fontSize": 22,
+						"fontWeight": "bold",
+						"textAlign": "center"
+					},
+					"layout": {
+						"frame": {
+							"top": 96,
+							"left": 178,
+							"width": 404,
+							"height": 32
+						}
+					}
+				},
+				{
+					"id": "dividerOne",
+					"type": "line",
+					"props": {
+						"startPoint": "topLeft",
+						"stroke": "#dddddd",
+						"strokeWidth": 1
+					},
+					"layout": {
+						"frame": {
+							"top": 148,
+							"left": 338,
+							"width": 270,
+							"height": 0
+						}
+					}
+				},
+				{
+					"id": "colorSchemeLabel",
+					"type": "text",
+					"props": {
+						"text": "Color Scheme",
+						"fontSize": 16,
+						"textAlign": "right"
+					},
+					"layout": {
+						"frame": {
+							"top": 184,
+							"left": 136,
+							"width": 186,
+							"height": 28
+						}
+					}
+				},
+				{
+					"id": "radioDefaultSystem",
+					"type": "radio",
+					"props": {
+						"text": "Default System",
+						"radioGroup": "colorSchemeGroup",
+						"textPlacement": "right",
+						"fontSize": 16,
+						"dataSource": "Form.colorScheme",
+						"dataSourceTypeHint": "integer"
+					},
+					"layout": {
+						"frame": {
+							"top": 184,
+							"left": 336,
+							"width": 250,
+							"height": 24
+						}
+					}
+				},
+				{
+					"id": "radioLight",
+					"type": "radio",
+					"props": {
+						"text": "Light",
+						"radioGroup": "colorSchemeGroup",
+						"textPlacement": "right",
+						"fontSize": 16,
+						"dataSource": "Form.colorScheme",
+						"dataSourceTypeHint": "integer"
+					},
+					"layout": {
+						"placement": "below(radioDefaultSystem)",
+						"align": "left",
+						"marginTop": 14,
+						"frame": {
+							"width": 180,
+							"height": 24
+						}
+					}
+				},
+				{
+					"id": "radioDark",
+					"type": "radio",
+					"props": {
+						"text": "Dark",
+						"radioGroup": "colorSchemeGroup",
+						"textPlacement": "right",
+						"fontSize": 16,
+						"dataSource": "Form.colorScheme",
+						"dataSourceTypeHint": "integer"
+					},
+					"layout": {
+						"placement": "below(radioLight)",
+						"align": "left",
+						"marginTop": 14,
+						"frame": {
+							"width": 180,
+							"height": 24
+						}
+					}
+				},
+				{
+					"id": "dividerTwo",
+					"type": "line",
+					"props": {
+						"startPoint": "topLeft",
+						"stroke": "#dddddd",
+						"strokeWidth": 1
+					},
+					"layout": {
+						"frame": {
+							"top": 300,
+							"left": 338,
+							"width": 270,
+							"height": 0
+						}
+					}
+				},
+				{
+					"id": "menuBarLabel",
+					"type": "text",
+					"props": {
+						"text": "Menu Bar Extra",
+						"fontSize": 16,
+						"textAlign": "right"
+					},
+					"layout": {
+						"frame": {
+							"top": 334,
+							"left": 112,
+							"width": 210,
+							"height": 28
+						}
+					}
+				},
+				{
+					"id": "menuBarExtraCheckbox",
+					"type": "checkbox",
+					"props": {
+						"text": "Show menu bar extra",
+						"textPlacement": "right",
+						"fontSize": 16,
+						"dataSource": "Form.showMenuBarExtra",
+						"dataSourceTypeHint": "boolean"
+					},
+					"layout": {
+						"frame": {
+							"top": 334,
+							"left": 336,
+							"width": 290,
+							"height": 24
+						}
+					}
+				},
+				{
+					"id": "dividerThree",
+					"type": "line",
+					"props": {
+						"startPoint": "topLeft",
+						"stroke": "#dddddd",
+						"strokeWidth": 1
+					},
+					"layout": {
+						"frame": {
+							"top": 408,
+							"left": 338,
+							"width": 270,
+							"height": 0
+						}
+					}
+				},
+				{
+					"id": "fontLabel",
+					"type": "text",
+					"props": {
+						"text": "Font",
+						"fontSize": 16,
+						"textAlign": "right"
+					},
+					"layout": {
+						"frame": {
+							"top": 444,
+							"left": 236,
+							"width": 86,
+							"height": 28
+						}
+					}
+				},
+				{
+					"id": "fontDescription",
+					"type": "text",
+					"props": {
+						"text": "Used for all new messages",
+						"fontSize": 16
+					},
+					"layout": {
+						"frame": {
+							"top": 444,
+							"left": 336,
+							"width": 280,
+							"height": 28
+						}
+					}
+				},
+				{
+					"id": "pointSizeLabel",
+					"type": "text",
+					"props": {
+						"text": "Point Size 15",
+						"fontSize": 16,
+						"textAlign": "right"
+					},
+					"layout": {
+						"frame": {
+							"top": 492,
+							"left": 170,
+							"width": 152,
+							"height": 28
+						}
+					}
+				},
+				{
+					"id": "pointSizeRuler",
+					"type": "ruler",
+					"props": {
+						"dataSource": "Form.pointSize",
+						"dataSourceTypeHint": "integer",
+						"min": 8,
+						"max": 36,
+						"step": 1,
+						"showGraduations": true,
+						"graduationStep": 1
+					},
+					"layout": {
+						"frame": {
+							"top": 494,
+							"left": 338,
+							"width": 270,
+							"height": 24
+						}
+					}
+				},
+				{
+					"id": "dividerFour",
+					"type": "line",
+					"props": {
+						"startPoint": "topLeft",
+						"stroke": "#dddddd",
+						"strokeWidth": 1
+					},
+					"layout": {
+						"frame": {
+							"top": 566,
+							"left": 338,
+							"width": 270,
+							"height": 0
+						}
+					}
+				},
+				{
+					"id": "displayLabel",
+					"type": "text",
+					"props": {
+						"text": "Display",
+						"fontSize": 16,
+						"textAlign": "right"
+					},
+					"layout": {
+						"frame": {
+							"top": 602,
+							"left": 226,
+							"width": 96,
+							"height": 28
+						}
+					}
+				},
+				{
+					"id": "lineNumbersCheckbox",
+					"type": "checkbox",
+					"props": {
+						"text": "Show Line Numbers",
+						"textPlacement": "right",
+						"fontSize": 16,
+						"dataSource": "Form.showLineNumbers",
+						"dataSourceTypeHint": "boolean"
+					},
+					"layout": {
+						"frame": {
+							"top": 602,
+							"left": 336,
+							"width": 280,
+							"height": 24
+						}
+					}
+				},
+				{
+					"id": "previewCheckbox",
+					"type": "checkbox",
+					"props": {
+						"text": "Show Preview",
+						"textPlacement": "right",
+						"fontSize": 16,
+						"dataSource": "Form.showPreview",
+						"dataSourceTypeHint": "boolean"
+					},
+					"layout": {
+						"placement": "below(lineNumbersCheckbox)",
+						"align": "left",
+						"marginTop": 14,
+						"frame": {
+							"width": 220,
+							"height": 24
+						}
+					}
+				}
+			]
+		}
+	]
+}
