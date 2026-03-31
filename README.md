@@ -12,6 +12,7 @@
 | [4d-create-project](4d-create-project/SKILL.md) | Create a new 4D project from scratch | - |
 | [4d-doc-lookup](4d-doc-lookup/SKILL.md) | Look up 4D documentation for commands, classes, or language concepts | Python |
 | [4d-find-command](4d-find-command/SKILL.md) | Find 4D commands by keyword | [tool4d](#tool4d), Python |
+| [4d-form-screenshot](4d_form-screenshot/SKILL.md) | Capture a PNG screenshot for a specific 4D form | [tool4d](#tool4d) or 4D runtime |
 | [4d-project-info](4d-project-info/SKILL.md) | Analyze a 4D project and produce a structured summary | Python |
 | [4d-publish-github](4d-publish-github/SKILL.md) | Publish a 4D project to GitHub with CI/CD workflows | Python |
 | [4d-publish-gitlab](4d-publish-gitlab/SKILL.md) | Publish a 4D project to GitLab (gitlab.com or self-hosted) | Python |
@@ -70,11 +71,11 @@ Copy the skill folders to the appropriate location for your AI assistant:
 
 ### tool4d
 
-Required by: [4d-check-syntax](4d-check-syntax/SKILL.md), [4d-find-command](4d-find-command/SKILL.md). Also used by [4d-run](4d-run/SKILL.md) when a dataless tool4d run is appropriate.
+Required by: [4d-check-syntax](4d-check-syntax/SKILL.md), [4d-find-command](4d-find-command/SKILL.md), [4d-form-screenshot](4d_form-screenshot/SKILL.md). Also used by [4d-run](4d-run/SKILL.md) when a dataless tool4d run is appropriate.
 
 ### 4D.app
 
-Optional for: [4d-run](4d-run/SKILL.md) when the method needs a real database or runtime features not available in tool4d.
+Optional for: [4d-run](4d-run/SKILL.md) and [4d-form-screenshot](4d_form-screenshot/SKILL.md) when the method needs a real database or runtime features not available in tool4d.
 
 The skill can:
 - Use a user-provided `4D.app` path
