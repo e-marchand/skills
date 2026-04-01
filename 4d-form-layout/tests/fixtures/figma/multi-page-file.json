@@ -1,0 +1,189 @@
+{
+  "document": {
+    "id": "0:0",
+    "name": "Demo File",
+    "type": "DOCUMENT",
+    "children": [
+      {
+        "id": "1:1",
+        "name": "Auth",
+        "type": "CANVAS",
+        "children": [
+          {
+            "id": "2:1",
+            "name": "Canvas Title",
+            "type": "TEXT",
+            "characters": "Authentication",
+            "style": {
+              "fontSize": 24,
+              "fontWeight": 700,
+              "textAlignHorizontal": "CENTER"
+            },
+            "fills": [
+              {
+                "type": "SOLID",
+                "color": {
+                  "r": 0.1,
+                  "g": 0.1,
+                  "b": 0.1
+                }
+              }
+            ],
+            "absoluteBoundingBox": {
+              "x": 50,
+              "y": 40,
+              "width": 220,
+              "height": 30
+            }
+          },
+          {
+            "id": "2:2",
+            "name": "Login Form",
+            "type": "FRAME",
+            "absoluteBoundingBox": {
+              "x": 100,
+              "y": 100,
+              "width": 320,
+              "height": 220
+            },
+            "children": [
+              {
+                "id": "3:1",
+                "name": "Email Label",
+                "type": "TEXT",
+                "characters": "Email",
+                "style": {
+                  "fontSize": 16,
+                  "fontWeight": 400,
+                  "textAlignHorizontal": "LEFT"
+                },
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "color": {
+                      "r": 0,
+                      "g": 0,
+                      "b": 0
+                    }
+                  }
+                ],
+                "absoluteBoundingBox": {
+                  "x": 120,
+                  "y": 124,
+                  "width": 60,
+                  "height": 20
+                }
+              },
+              {
+                "id": "3:2",
+                "name": "Email Input",
+                "type": "RECTANGLE",
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "color": {
+                      "r": 1,
+                      "g": 1,
+                      "b": 1
+                    }
+                  }
+                ],
+                "strokes": [
+                  {
+                    "type": "SOLID",
+                    "color": {
+                      "r": 0.8,
+                      "g": 0.8,
+                      "b": 0.8
+                    }
+                  }
+                ],
+                "strokeWeight": 1,
+                "cornerRadius": 6,
+                "absoluteBoundingBox": {
+                  "x": 120,
+                  "y": 154,
+                  "width": 220,
+                  "height": 30
+                }
+              },
+              {
+                "id": "3:3",
+                "name": "Divider",
+                "type": "LINE",
+                "strokes": [
+                  {
+                    "type": "SOLID",
+                    "color": {
+                      "r": 0.9,
+                      "g": 0.9,
+                      "b": 0.9
+                    }
+                  }
+                ],
+                "strokeWeight": 1,
+                "absoluteBoundingBox": {
+                  "x": 120,
+                  "y": 198,
+                  "width": 220,
+                  "height": 0
+                }
+              },
+              {
+                "id": "3:4",
+                "name": "Submit Label",
+                "type": "TEXT",
+                "characters": "Submit",
+                "style": {
+                  "fontSize": 16,
+                  "fontWeight": 700,
+                  "textAlignHorizontal": "CENTER"
+                },
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "color": {
+                      "r": 0.2,
+                      "g": 0.2,
+                      "b": 0.6
+                    }
+                  }
+                ],
+                "absoluteBoundingBox": {
+                  "x": 220,
+                  "y": 230,
+                  "width": 80,
+                  "height": 24
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "1:2",
+        "name": "Settings",
+        "type": "CANVAS",
+        "children": [
+          {
+            "id": "4:1",
+            "name": "Settings Title",
+            "type": "TEXT",
+            "characters": "Settings",
+            "style": {
+              "fontSize": 18,
+              "fontWeight": 700,
+              "textAlignHorizontal": "LEFT"
+            },
+            "absoluteBoundingBox": {
+              "x": 80,
+              "y": 60,
+              "width": 120,
+              "height": 24
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

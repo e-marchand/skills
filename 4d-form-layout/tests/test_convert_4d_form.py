@@ -12,6 +12,7 @@ SKILL_DIR = TESTS_DIR.parent
 SCRIPT = SKILL_DIR / "scripts" / "convert_4d_form.py"
 WORKSPACE_ROOT = SKILL_DIR.parents[1]
 NATIVE_FIXTURES_DIR = TESTS_DIR / "fixtures" / "native"
+FIGMA_FIXTURES_DIR = TESTS_DIR / "fixtures" / "figma"
 
 
 def load_json(path: Path):
@@ -122,6 +123,57 @@ class Convert4DFormTests(unittest.TestCase):
         result = run_cli("validate", str(fixture), "--rule", "no_overlap")
         self.assertEqual(result.returncode, 0)
         self.assertIn("no_overlap", result.stdout)
+
+    def test_figma_to_layout_requires_page_selection_for_multi_page_file(self):
+        fixture = FIGMA_FIXTURES_DIR / "multi-page-file.json"
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output = Path(tmpdir) / "figma.layout.json"
+            result = run_cli("figma-to-layout", str(fixture), str(output), check=False)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("multiple pages", result.stderr)
+            self.assertIn("Auth (1:1)", result.stderr)
+            self.assertIn("Settings (1:2)", result.stderr)
+
+    def test_figma_to_layout_imports_selected_page(self):
+        fixture = FIGMA_FIXTURES_DIR / "multi-page-file.json"
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output = Path(tmpdir) / "figma.layout.json"
+            run_cli("figma-to-layout", str(fixture), str(output), "--page", "Auth")
+            layout = load_json(output)
+            self.assertEqual(layout["meta"]["sourceFigma"]["pageName"], "Auth")
+            self.assertEqual(layout["form"]["windowTitle"], "Auth")
+            self.assertEqual(layout["pages"][0]["role"], "shared")
+            self.assertEqual(layout["pages"][1]["role"], "page")
+            self.assertEqual(len(layout["pages"][1]["elements"]), 5)
+            self.assertEqual(layout["pages"][1]["elements"][0]["id"], "Canvas_Title")
+            self.assertEqual(layout["pages"][1]["elements"][0]["layout"]["frame"]["top"], 0)
+            self.assertEqual(layout["pages"][1]["elements"][1]["id"], "Email_Label")
+            self.assertEqual(layout["pages"][1]["elements"][1]["layout"]["frame"]["left"], 70)
+            self.assertEqual(layout["pages"][1]["elements"][2]["type"], "rectangle")
+            self.assertEqual(layout["pages"][1]["elements"][3]["type"], "line")
+
+    def test_figma_to_layout_imports_selected_subtree(self):
+        fixture = FIGMA_FIXTURES_DIR / "multi-page-file.json"
+        with tempfile.TemporaryDirectory() as tmpdir:
+            output = Path(tmpdir) / "figma-node.layout.json"
+            run_cli(
+                "figma-to-layout",
+                str(fixture),
+                str(output),
+                "--page",
+                "Auth",
+                "--node",
+                "Login Form",
+            )
+            layout = load_json(output)
+            self.assertEqual(layout["meta"]["sourceFigma"]["nodeName"], "Login Form")
+            self.assertEqual(layout["form"]["windowTitle"], "Login Form")
+            self.assertEqual(layout["form"]["width"], 320)
+            self.assertEqual(layout["form"]["height"], 220)
+            self.assertEqual(len(layout["pages"][1]["elements"]), 4)
+            self.assertEqual(layout["pages"][1]["elements"][0]["layout"]["frame"]["top"], 24)
+            self.assertEqual(layout["pages"][1]["elements"][0]["layout"]["frame"]["left"], 20)
+            self.assertEqual(layout["pages"][1]["elements"][1]["props"]["cornerRadius"], 6)
 
 
 if __name__ == "__main__":

@@ -22,6 +22,26 @@ ALIGN_AXES = {"left", "centerX", "right", "top", "centerY", "bottom"}
 PLACEMENT_RE = re.compile(r"^(below|above|rightOf|leftOf|centeredIn)\(([^()]+)\)$")
 ALIGN_RE = re.compile(r"^alignedWith\(([A-Za-z0-9_@ .:-]+)\.(left|centerX|right|top|centerY|bottom)\)$")
 SHORT_ALIGN_RE = re.compile(r"^(left|centerX|right|top|centerY|bottom)$")
+FIGMA_CONTAINER_TYPES = {
+    "DOCUMENT",
+    "CANVAS",
+    "FRAME",
+    "GROUP",
+    "SECTION",
+    "COMPONENT",
+    "COMPONENT_SET",
+    "INSTANCE",
+}
+FIGMA_RENDERABLE_TYPES = {
+    "TEXT",
+    "RECTANGLE",
+    "LINE",
+    "ELLIPSE",
+    "VECTOR",
+    "POLYGON",
+    "STAR",
+    "BOOLEAN_OPERATION",
+}
 
 SCRIPT_PATH = Path(__file__).resolve()
 SKILL_ROOT = SCRIPT_PATH.parents[1]
@@ -638,6 +658,339 @@ def detect_layout_document(document: dict[str, Any]) -> bool:
     return isinstance(meta, dict) and meta.get("format") == LAYOUT_FORMAT
 
 
+def detect_figma_document(document: dict[str, Any]) -> bool:
+    if isinstance(document.get("document"), dict):
+        return True
+    node_type = document.get("type")
+    return isinstance(node_type, str) and node_type in FIGMA_CONTAINER_TYPES | FIGMA_RENDERABLE_TYPES
+
+
+def normalize_figma_root(document: dict[str, Any]) -> dict[str, Any]:
+    root = document.get("document", document)
+    if not isinstance(root, dict) or not isinstance(root.get("type"), str):
+        raise ConversionError("Figma input must be a JSON object with a document root")
+    return root
+
+
+def match_named_node(nodes: list[dict[str, Any]], raw_value: str, kind: str) -> dict[str, Any]:
+    id_matches = [node for node in nodes if node.get("id") == raw_value]
+    if len(id_matches) == 1:
+        return id_matches[0]
+    if len(id_matches) > 1:
+        raise ConversionError(f"Multiple {kind}s matched id '{raw_value}'")
+
+    name_matches = [node for node in nodes if node.get("name") == raw_value]
+    if len(name_matches) == 1:
+        return name_matches[0]
+    if len(name_matches) > 1:
+        raise ConversionError(f"Multiple {kind}s matched name '{raw_value}'; use the id instead")
+
+    available = ", ".join(
+        f"{node.get('name', '<unnamed>')} ({node.get('id', '<no id>')})" for node in nodes
+    )
+    raise ConversionError(f"Unknown {kind} '{raw_value}'. Available {kind}s: {available}")
+
+
+def figma_pages(root: dict[str, Any]) -> list[dict[str, Any]]:
+    if root.get("type") == "DOCUMENT":
+        return [child for child in root.get("children", []) if child.get("type") == "CANVAS"]
+    if root.get("type") == "CANVAS":
+        return [root]
+    return []
+
+
+def select_figma_page(root: dict[str, Any], page_ref: str | None) -> dict[str, Any]:
+    pages = figma_pages(root)
+    if not pages:
+        if page_ref:
+            raise ConversionError("This Figma input does not contain pages; omit --page")
+        return root
+    if page_ref:
+        return match_named_node(pages, page_ref, "page")
+    if len(pages) == 1:
+        return pages[0]
+
+    available = ", ".join(
+        f"{page.get('name', '<unnamed>')} ({page.get('id', '<no id>')})" for page in pages
+    )
+    raise ConversionError(
+        "Figma input contains multiple pages; choose one with --page. "
+        f"Available pages: {available}"
+    )
+
+
+def walk_figma_nodes(node: dict[str, Any]) -> list[dict[str, Any]]:
+    nodes = [node]
+    for child in node.get("children", []):
+        if isinstance(child, dict):
+            nodes.extend(walk_figma_nodes(child))
+    return nodes
+
+
+def select_figma_scope(page: dict[str, Any], node_ref: str | None) -> dict[str, Any]:
+    if not node_ref:
+        return page
+    return match_named_node(walk_figma_nodes(page), node_ref, "node")
+
+
+def figma_box(node: dict[str, Any]) -> dict[str, float] | None:
+    box = node.get("absoluteBoundingBox")
+    if not isinstance(box, dict):
+        return None
+    try:
+        return {
+            "x": float(box["x"]),
+            "y": float(box["y"]),
+            "width": float(box["width"]),
+            "height": float(box["height"]),
+        }
+    except (KeyError, TypeError, ValueError):
+        return None
+
+
+def round_box(box: dict[str, float], origin_x: float, origin_y: float) -> dict[str, int]:
+    return ordered_frame(
+        {
+            "top": int(round(box["y"] - origin_y)),
+            "left": int(round(box["x"] - origin_x)),
+            "width": int(round(box["width"])),
+            "height": int(round(box["height"])),
+        }
+    )
+
+
+def figma_color_to_hex(color: Any) -> str | None:
+    if not isinstance(color, dict):
+        return None
+    try:
+        red = max(0, min(255, int(round(float(color["r"]) * 255))))
+        green = max(0, min(255, int(round(float(color["g"]) * 255))))
+        blue = max(0, min(255, int(round(float(color["b"]) * 255))))
+    except (KeyError, TypeError, ValueError):
+        return None
+    return f"#{red:02x}{green:02x}{blue:02x}"
+
+
+def first_solid_paint_color(paints: Any) -> str | None:
+    if not isinstance(paints, list):
+        return None
+    for paint in paints:
+        if not isinstance(paint, dict):
+            continue
+        if paint.get("visible") is False:
+            continue
+        if paint.get("type") != "SOLID":
+            continue
+        color = figma_color_to_hex(paint.get("color"))
+        if color is not None:
+            return color
+    return None
+
+
+def safe_int(value: Any) -> int | None:
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, int):
+        return value
+    if isinstance(value, float):
+        return int(round(value))
+    return None
+
+
+def slugify_identifier(raw: str) -> str:
+    slug = re.sub(r"[^A-Za-z0-9]+", "_", raw).strip("_")
+    if not slug:
+        slug = "element"
+    if slug[0].isdigit():
+        slug = f"n_{slug}"
+    return slug
+
+
+def unique_identifier(base: str, seen: set[str]) -> str:
+    candidate = base
+    index = 2
+    while candidate in seen:
+        candidate = f"{base}_{index}"
+        index += 1
+    seen.add(candidate)
+    return candidate
+
+
+def figma_text_props(node: dict[str, Any]) -> dict[str, Any]:
+    props: dict[str, Any] = {"text": node.get("characters", node.get("name", ""))}
+    style = node.get("style")
+    if isinstance(style, dict):
+        font_size = safe_int(style.get("fontSize"))
+        if font_size is not None:
+            props["fontSize"] = font_size
+        font_weight = safe_int(style.get("fontWeight"))
+        if font_weight is not None and font_weight >= 700:
+            props["fontWeight"] = "bold"
+        text_align = style.get("textAlignHorizontal")
+        if isinstance(text_align, str):
+            props["textAlign"] = text_align.lower()
+    fill = first_solid_paint_color(node.get("fills"))
+    if fill is not None:
+        props["color"] = fill
+    return props
+
+
+def figma_shape_props(node: dict[str, Any]) -> dict[str, Any]:
+    props: dict[str, Any] = {}
+    fill = first_solid_paint_color(node.get("fills"))
+    if fill is not None:
+        props["fill"] = fill
+    stroke = first_solid_paint_color(node.get("strokes"))
+    if stroke is not None:
+        props["stroke"] = stroke
+    stroke_weight = safe_int(node.get("strokeWeight"))
+    if stroke_weight is not None:
+        props["strokeWidth"] = stroke_weight
+    corner_radius = safe_int(node.get("cornerRadius"))
+    if corner_radius is not None:
+        props["cornerRadius"] = corner_radius
+    return props
+
+
+def figma_node_to_element(
+    node: dict[str, Any],
+    *,
+    origin_x: float,
+    origin_y: float,
+    seen_ids: set[str],
+) -> dict[str, Any] | None:
+    node_type = node.get("type")
+    if node_type not in FIGMA_RENDERABLE_TYPES:
+        return None
+
+    box = figma_box(node)
+    if box is None:
+        return None
+
+    if node_type == "TEXT":
+        element_type = "text"
+        props = figma_text_props(node)
+    elif node_type == "LINE":
+        element_type = "line"
+        props = figma_shape_props(node)
+        props.setdefault("startPoint", "topLeft")
+    elif node_type == "ELLIPSE":
+        element_type = "oval"
+        props = figma_shape_props(node)
+    elif node_type in {"VECTOR", "POLYGON", "STAR", "BOOLEAN_OPERATION"}:
+        element_type = "shape"
+        props = figma_shape_props(node)
+    else:
+        element_type = "rectangle"
+        props = figma_shape_props(node)
+
+    base_id = slugify_identifier(node.get("name") or f"{node_type.lower()}_{node.get('id', '')}")
+    element_id = unique_identifier(base_id, seen_ids)
+    return {
+        "id": element_id,
+        "type": element_type,
+        "props": props,
+        "layout": {"frame": round_box(box, origin_x, origin_y)},
+    }
+
+
+def collect_figma_renderables(
+    node: dict[str, Any],
+    *,
+    origin_x: float,
+    origin_y: float,
+    seen_ids: set[str],
+) -> list[dict[str, Any]]:
+    if node.get("visible") is False:
+        return []
+
+    children = [child for child in node.get("children", []) if isinstance(child, dict)]
+    if children:
+        elements: list[dict[str, Any]] = []
+        for child in children:
+            elements.extend(
+                collect_figma_renderables(
+                    child,
+                    origin_x=origin_x,
+                    origin_y=origin_y,
+                    seen_ids=seen_ids,
+                )
+            )
+        if elements:
+            return elements
+
+    element = figma_node_to_element(node, origin_x=origin_x, origin_y=origin_y, seen_ids=seen_ids)
+    return [] if element is None else [element]
+
+
+def bounds_from_elements(elements: list[dict[str, Any]]) -> tuple[int, int]:
+    if not elements:
+        raise ConversionError("Selected Figma scope does not contain any supported visible nodes")
+    right = max(element["layout"]["frame"]["left"] + element["layout"]["frame"]["width"] for element in elements)
+    bottom = max(element["layout"]["frame"]["top"] + element["layout"]["frame"]["height"] for element in elements)
+    return right, bottom
+
+
+def figma_to_layout_document(
+    figma_document: dict[str, Any],
+    *,
+    page_ref: str | None,
+    node_ref: str | None,
+) -> dict[str, Any]:
+    root = normalize_figma_root(figma_document)
+    page = select_figma_page(root, page_ref)
+    scope = select_figma_scope(page, node_ref)
+
+    scope_box = figma_box(scope)
+    if scope_box is not None:
+        origin_x = scope_box["x"]
+        origin_y = scope_box["y"]
+    else:
+        visible_boxes = [box for node in walk_figma_nodes(scope) if (box := figma_box(node)) is not None]
+        if not visible_boxes:
+            raise ConversionError("Selected Figma scope does not contain any supported visible nodes")
+        origin_x = min(box["x"] for box in visible_boxes)
+        origin_y = min(box["y"] for box in visible_boxes)
+
+    elements = collect_figma_renderables(scope, origin_x=origin_x, origin_y=origin_y, seen_ids=set())
+    width, height = bounds_from_elements(elements)
+    if scope_box is not None:
+        width = max(width, int(round(scope_box["width"])))
+        height = max(height, int(round(scope_box["height"])))
+
+    return {
+        "meta": {
+            "format": LAYOUT_FORMAT,
+            "version": LAYOUT_VERSION,
+            "sourceFigma": {
+                "pageId": page.get("id"),
+                "pageName": page.get("name"),
+                "nodeId": scope.get("id"),
+                "nodeName": scope.get("name"),
+            },
+        },
+        "form": {
+            "windowTitle": scope.get("name") or page.get("name") or "Imported Figma Form",
+            "width": width,
+            "height": height,
+            "rightMargin": 20,
+            "bottomMargin": 20,
+        },
+        "pages": [
+            {
+                "name": "page 0",
+                "role": "shared",
+                "elements": [],
+            },
+            {
+                "name": "page 1",
+                "role": "page",
+                "elements": elements,
+            },
+        ],
+    }
+
+
 def normalize_input_document(path: Path) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any], str]:
     document = load_json(path)
     if not isinstance(document, dict):
@@ -922,9 +1275,17 @@ def cmd_validate(args: argparse.Namespace) -> None:
     print(f"Validation passed for {input_kind} input.")
 
 
+def cmd_figma_to_layout(args: argparse.Namespace) -> None:
+    figma = load_json(Path(args.input))
+    if not isinstance(figma, dict) or not detect_figma_document(figma):
+        raise ConversionError("Input file must be a Figma API JSON document or exported Figma JSON")
+    layout = figma_to_layout_document(figma, page_ref=args.page, node_ref=args.node)
+    dump_json(Path(args.output), layout)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Convert between .4DForm and a relational 4D layout JSON."
+        description="Convert between .4DForm, Figma JSON, and a relational 4D layout JSON."
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
@@ -937,6 +1298,19 @@ def build_parser() -> argparse.ArgumentParser:
     layout_to_form.add_argument("input", help="Input layout JSON file")
     layout_to_form.add_argument("output", help="Output .4DForm JSON file")
     layout_to_form.set_defaults(func=cmd_layout_to_form)
+
+    figma_to_layout = subparsers.add_parser("figma-to-layout")
+    figma_to_layout.add_argument("input", help="Input Figma API JSON or exported Figma JSON file")
+    figma_to_layout.add_argument("output", help="Output layout JSON file")
+    figma_to_layout.add_argument(
+        "--page",
+        help="Figma page name or id. Required when the Figma file contains multiple pages.",
+    )
+    figma_to_layout.add_argument(
+        "--node",
+        help="Optional node name or id inside the selected page to import only part of the page.",
+    )
+    figma_to_layout.set_defaults(func=cmd_figma_to_layout)
 
     validate = subparsers.add_parser("validate")
     validate.add_argument("input", help="Input layout JSON or .4DForm file")

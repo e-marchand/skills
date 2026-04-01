@@ -1,6 +1,6 @@
 ---
 name: 4d-form-layout
-description: Design or refactor 4D forms through a relational intermediate JSON format and deterministic Python conversion to or from `.4DForm`. Use when Codex needs to create a new 4D form, convert an existing `.4DForm` into an LLM-friendly ordered layout file, preserve round-trip fidelity while editing positions relationally, or validate generated forms against the bundled schema reference.
+description: Design or refactor 4D forms through a relational intermediate JSON format and deterministic Python conversion to or from `.4DForm`, plus import a draft layout from Figma API JSON. Use when Codex needs to create a new 4D form, convert an existing `.4DForm` into an LLM-friendly ordered layout file, import a Figma page or subtree into a layout scaffold, preserve round-trip fidelity while editing positions relationally, or validate generated forms against the bundled schema reference.
 ---
 
 # 4D Form Layout
@@ -20,6 +20,9 @@ python skills/4d-form-layout/scripts/convert_4d_form.py \
 
 python skills/4d-form-layout/scripts/convert_4d_form.py \
   layout-to-form path/to/form.layout.json path/to/form.4DForm
+
+python skills/4d-form-layout/scripts/convert_4d_form.py \
+  figma-to-layout path/to/figma-file.json path/to/form.layout.json --page "Login"
 
 python skills/4d-form-layout/scripts/convert_4d_form.py \
   validate path/to/form.layout.json
@@ -53,6 +56,14 @@ When authoring a new layout JSON:
 - Always provide `layout.frame.width` and `layout.frame.height`.
 - Add `layout.frame.top` or `layout.frame.left` only when a relation does not determine that axis.
 - Use `references/design-rules.md` as a reference for spacing and alignment best practices.
+
+When importing from Figma API JSON:
+
+- Use `figma-to-layout` on a Figma API file JSON or equivalent exported JSON.
+- If the Figma file contains multiple pages, ask the user which page to convert and pass it with `--page`.
+- If the user wants only part of the page, pass `--node` with a frame, group, or node name or id inside that page.
+- Treat the imported layout as a draft scaffold. Text, lines, rectangles, ovals, and simple shapes are imported with absolute frames, but semantic control mapping still needs review before generating a final `.4DForm`.
+- Keep the imported page as page 1 and leave page 0 empty/shared unless you intentionally move shared chrome there later.
 
 ## Validation
 
@@ -88,6 +99,7 @@ Current bundled graphical rules:
 
 - Keep the intermediate file JSON-only in v1.
 - Prefer editing the layout file, not absolute coordinates in `.4DForm`.
+- Prefer importing only the relevant Figma subtree with `--node` when a page contains multiple mockups.
 - Preserve unsupported properties verbatim in `props`; do not redesign them.
 - Treat page 0 as the shared page when generating new forms.
 - Treat relation targets as ordered dependencies: reference earlier elements on the same page.
