@@ -15,7 +15,9 @@ Accept either:
 - A path to `form.4DForm` such as `Project/Sources/Forms/Form1/form.4DForm`
 - A path to the form folder if that folder contains `form.4DForm`
 
-Pass the raw form input through `--user-param`. The bundled `_formScreenshot.4dm` resolves a `form.4DForm` path to the form name before calling `FORM SCREENSHOT`.
+Optionally append `:` followed by a page number to capture a specific page (e.g. `Form1:2`). Page 0 is the shared page. If omitted, page 1 is used by default.
+
+Pass the raw form input through `--user-param`. The bundled `_formScreenshot.4dm` resolves a `form.4DForm` path to the form name and parses the optional page number before calling `FORM SCREENSHOT`.
 
 ## Use /4d-run
 
@@ -25,7 +27,7 @@ Use the `/4d-run` skill to locate `tool4d` and to run the startup method.
 
 1. Locate the current `.4DProject`.
 2. Copy `assets/_formScreenshot.4dm` to `Project/Sources/Methods/_formScreenshot.4dm` if it is missing.
-3. Keep the user input unchanged and pass it as `--user-param=<form name or path>`.
+3. Keep the user input unchanged and pass it as `--user-param=<form name or path>` (append `:<page>` when a specific page is requested, e.g. `--user-param=Form1:2`).
 4. Use `/4d-run` to run `_formScreenshot` on the current project.
 5. Prefer `tool4d` first. If `/4d-run` needs the full 4D runtime, use the user-provided 4D executable path through `/4d-run`.
 6. If the run crashes because `defaultJsonForm.json` is missing, copy `assets/defaultJsonForm.json` into the `Resources` folder of the runtime being used, then retry.
