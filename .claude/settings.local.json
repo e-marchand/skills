@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cp \"/Applications/4D 0.0/4D.app/Contents/Resources/DTD/base.dtd\" /Users/eric/skills/4d-catalog/assets/dtd/)",
+      "Bash(cp \"/Applications/4D 0.0/4D.app/Contents/Resources/DTD/base_core.dtd\" /Users/eric/skills/4d-catalog/assets/dtd/)",
+      "Bash(cp \"/Applications/4D 0.0/4D.app/Contents/Resources/DTD/common.dtd\" /Users/eric/skills/4d-catalog/assets/dtd/)",
+      "Read(//private/tmp/**)",
+      "Bash(rm -rf test_catalog)",
+      "Bash(mkdir test_catalog)",
+      "Bash(xmllint --version)",
+      "Bash(xmllint --dtdvalid /Users/eric/skills/4d-catalog/assets/dtd/base.dtd --noout /tmp/full_test/catalog.4DCatalog)",
+      "Bash(rm -rf full_test)",
+      "Bash(xmllint --nonet --dtdvalid /Users/eric/skills/4d-catalog/assets/dtd/base.dtd --noout full_test/catalog.4DCatalog)"
+    ]
+  }
+}

@@ -1,110 +1,55 @@
 ---
 name: 4d-catalog
-description: Manage 4D base catalog files (.4DCatalog). Use this skill when the user wants to create, inspect, or modify a 4D database catalog — adding/removing tables and fields, viewing structure, or initializing a new catalog from scratch.
+description: Create and edit 4D database catalog files (.4DCatalog) — tables, fields, primary keys, indexes.
 license: Apache 2.0
 ---
 
 # 4D Catalog Manager
 
-Manage `.4DCatalog` XML files that define the structure of a 4D database (tables, fields, relations, indexes).
-
-## Script
-
-```bash
-python scripts/catalog.py <command> [args]
-```
+`<project>` is the 4D project root. The script resolves to `<project>/Project/Sources/catalog.4DCatalog`. A path ending in `.4DCatalog` overrides.
 
 ## Commands
 
-### Create a new catalog
-
 ```bash
-python scripts/catalog.py create <catalog_path> <base_name>
+python scripts/catalog.py create     <project> <base_name>
+python scripts/catalog.py info       <project>
+python scripts/catalog.py add-table  <project> <table> [field_spec ...] [--no-id]
+python scripts/catalog.py remove-table <project> <table>
+python scripts/catalog.py add-field  <project> <table> <field_spec> [field_spec ...]
+python scripts/catalog.py remove-field <project> <table> <field>
 ```
 
-- `catalog_path`: path to `.4DCatalog` file, or a directory (creates `Project/Sources/catalog.4DCatalog` inside)
-- `base_name`: name of the 4D base (embedded in the XML)
-- UUID is automatically generated
+`add-table` adds an auto-incrementing `ID` Long Integer as primary key by default; pass `--no-id` to skip.
 
-### Inspect a catalog
+## Field spec
 
-```bash
-python scripts/catalog.py info <catalog_path>
-python scripts/catalog.py list-tables <catalog_path>
+```
+name:type[:flag,flag,...]
 ```
 
-`info` prints a summary (table count, relation count, index count).
-`list-tables` lists each table with its fields, types, and flags.
+**Types:** `bool`, `int`, `long`, `int64`, `real`, `date`, `time`, `alpha`, `text`, `picture`, `blob`, `object`, `vector`
 
-### Add a table
+**Flags:** `unique`, `not-null`, `autosequence`, `pk`, `length=N` (alpha only)
 
-```bash
-python scripts/catalog.py add-table <catalog_path> <table_name> [--no-id]
-```
-
-By default, creates an `ID` Long Integer field with `autosequence`, `unique`, `not_null`, sets it as primary key, and adds a unique index. Pass `--no-id` to create an empty table.
-
-### Remove a table
+## Examples
 
 ```bash
-python scripts/catalog.py remove-table <catalog_path> <table_name>
+python scripts/catalog.py create . "My Base"
+python scripts/catalog.py add-table . People Name:alpha:length=128 Age:int Vec:vector
+python scripts/catalog.py add-field . People Email:alpha:unique,not-null,length=255
+python scripts/catalog.py info .
 ```
 
-Also removes all relations and indexes referencing that table's fields.
+## Validation
 
-### Add a field
+Catalogs can be validated against the bundled DTD:
 
 ```bash
-python scripts/catalog.py add-field <catalog_path> <table_name> <field_name> <type> [options]
+xmllint --nonet --dtdvalid assets/dtd/base.dtd --noout <project>/Project/Sources/catalog.4DCatalog
 ```
-
-**Field types:**
-
-| Type keyword        | 4D type          | Type ID |
-|---------------------|------------------|---------|
-| `bool` / `boolean`  | Boolean          | 1       |
-| `int` / `integer`   | Integer          | 3       |
-| `long` / `longint`  | Long Integer     | 4       |
-| `int64`             | Integer 64       | 5       |
-| `real` / `float`    | Real             | 6       |
-| `date`              | Date             | 8       |
-| `time`              | Time             | 9       |
-| `alpha`             | Alpha (255 chars)| 10      |
-| `text`              | Long Text        | 10      |
-| `picture`           | Picture          | 12      |
-| `blob`              | BLOB             | 18      |
-| `object`            | Object           | 21      |
-| `vector`            | Vector (4D.Vector class) | 21 |
-
-**Options:**
-
-| Flag            | Effect                                  |
-|-----------------|-----------------------------------------|
-| `--unique`      | Adds `unique="true"`                    |
-| `--not-null`    | Adds `not_null="true"`                  |
-| `--autosequence`| Adds `autosequence="true"`              |
-| `--length N`    | Sets `limiting_length` for alpha fields |
-| `--primary-key` | Sets field as table primary key         |
-
-### Remove a field
-
-```bash
-python scripts/catalog.py remove-field <catalog_path> <table_name> <field_name>
-```
-
-Also removes any primary key declaration and indexes referencing this field.
-
-## Catalog path resolution
-
-All commands accept the catalog path in multiple forms:
-- `/path/to/catalog.4DCatalog` — direct path
-- `/path/to/project/` — directory, resolves to `Project/Sources/catalog.4DCatalog` inside
-- `.` — current directory
 
 ## Resources
 
-- `scripts/catalog.py` — main management script (no external dependencies)
-- `resources/empty_catalog.xml` — template showing the minimal XML structure
-- `assets/dtd/base.dtd` — 4D base DTD (references base_core and common)
-- `assets/dtd/base_core.dtd` — table, field, index, relation definitions
-- `assets/dtd/common.dtd` — shared elements (field_ref, table_ref, etc.)
+- `scripts/catalog.py` — management script (stdlib only)
+- `resources/empty_catalog.xml` — template with `{{basename}}` / `{{uuid}}` placeholders
+- `assets/dtd/{base,base_core,common}.dtd` — 4D DTDs, local refs for offline validation
