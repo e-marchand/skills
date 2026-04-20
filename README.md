@@ -7,6 +7,7 @@
 | Skill | Description | Requirements |
 |-------|-------------|--------------|
 | [4d-add-dependency](4d-add-dependency/SKILL.md) | Add dependencies to a 4D project | Python |
+| [4d-catalog](4d-catalog/SKILL.md) | Manage 4D base catalog files (.4DCatalog) | Python |
 | [4d-check-syntax](4d-check-syntax/SKILL.md) | Compile a 4D project to check for syntax errors | [tool4d](#tool4d) |
 | [4d-clean-project](4d-clean-project/SKILL.md) | Clean a 4D project by removing generated files and caches | Python |
 | [4d-create-project](4d-create-project/SKILL.md) | Create a new 4D project from scratch | - |
