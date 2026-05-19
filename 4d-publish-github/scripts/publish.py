@@ -206,6 +206,11 @@ def setup_github_repo(project_root, project_name, public=False, description=None
     
     if result.returncode == 0:
         print(f"  Repository created: {project_name}")
+        # Add default topics
+        subprocess.run(
+            "gh repo edit --add-topic 4d --add-topic 4d-component",
+            shell=True, capture_output=True
+        )
         return True
     else:
         print("  Failed to create repository")
