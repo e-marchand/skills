@@ -1,0 +1,2 @@
+# Never commit the real config (it holds the DLTK secret)
+assets/config.yml

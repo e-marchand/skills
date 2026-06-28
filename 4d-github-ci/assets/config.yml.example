@@ -1,0 +1,16 @@
+# Configuration for the 4d-github-ci skill.
+#
+# Copy this file to  config.yml  (same folder) and fill in your values.
+# config.yml is git-ignored and read ONLY by the skill's scripts. Secret values
+# are piped to `gh` via stdin and are never printed. The assistant must not
+# read config.yml.
+
+# Written into .github/FUNDING.yml. Add any platform GitHub supports
+# (github, patreon, open_collective, ko_fi, custom, ...). A value may be a
+# single handle or a [list].
+funding:
+  github: [phimage]
+
+# GitHub Actions secrets pushed with `gh secret set`. Put your real DLTK token.
+secrets:
+  DLTK: "PUT_YOUR_DLTK_TOKEN_HERE"
