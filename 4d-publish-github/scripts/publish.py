@@ -4,6 +4,7 @@
 import argparse
 import os
 import platform
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -85,6 +86,24 @@ def get_project_name(project_root):
     return project_root.name
 
 
+def detect_topic(project_root):
+    """Detect 4d-component vs 4d-project from settings.4DSettings.
+
+    A non-empty component_classStore_name means the project defines its own
+    class namespace so it can be loaded as a dependency by other projects.
+    """
+    settings_file = project_root / "Project" / "Sources" / "settings.4DSettings"
+    if settings_file.exists():
+        try:
+            content = settings_file.read_text(encoding="utf-8", errors="replace")
+            match = re.search(r'component_classStore_name\s*=\s*"([^"]*)"', content)
+            if match and match.group(1).strip():
+                return "4d-component"
+        except Exception:
+            pass
+    return "4d-project"
+
+
 def run_cmd(cmd, check=True):
     """Run a shell command and return output."""
     result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
@@ -144,13 +163,16 @@ def create_readme(project_root, project_name, description):
     return True
 
 
-def setup_github_repo(project_root, project_name, public=False, description=None, interactive=True):
+def setup_github_repo(project_root, project_name, public=False, description=None, topic=None, interactive=True):
     """Create GitHub repository if needed."""
     os.chdir(project_root)
     
     if has_remote(project_root):
         print("  GitHub remote already configured")
         return True
+    
+    if topic is None or topic == "auto":
+        topic = detect_topic(project_root)
     
     # Check gh authentication
     if not check_gh_auth():
@@ -186,6 +208,17 @@ def setup_github_repo(project_root, project_name, public=False, description=None
         print("  2. Public")
         visibility = input("Choice [1/2]: ").strip()
         public = visibility == "2"
+        
+        # Confirm detected topic (component vs standalone project)
+        print(f"\nDetected topic: {topic} (based on settings.4DSettings)")
+        print("  1. Keep detected topic")
+        print("  2. 4d-component (reusable in other projects)")
+        print("  3. 4d-project (standalone project)")
+        topic_choice = input("Choice [1/2/3]: ").strip()
+        if topic_choice == "2":
+            topic = "4d-component"
+        elif topic_choice == "3":
+            topic = "4d-project"
     
     visibility_flag = "--public" if public else "--private"
     
@@ -206,11 +239,12 @@ def setup_github_repo(project_root, project_name, public=False, description=None
     
     if result.returncode == 0:
         print(f"  Repository created: {project_name}")
-        # Add default topics
+        # Add topics: "4d" always, plus the detected/chosen component vs project topic
         subprocess.run(
-            "gh repo edit --add-topic 4d --add-topic 4d-component",
+            f"gh repo edit --add-topic 4d --add-topic {topic}",
             shell=True, capture_output=True
         )
+        print(f"  Topics added: 4d, {topic}")
         return True
     else:
         print("  Failed to create repository")
@@ -231,6 +265,9 @@ Examples:
   
   # Non-interactive: create public repo with description
   python3 publish.py --yes --public --description "My 4D component"
+  
+  # Force the 4d-component topic instead of auto-detecting
+  python3 publish.py --yes --topic 4d-component
 """
     )
     parser.add_argument("--yes", "-y", action="store_true",
@@ -239,6 +276,8 @@ Examples:
                         help="Create public repository (default: private)")
     parser.add_argument("--description", "-d", type=str, default=None,
                         help="Repository description")
+    parser.add_argument("--topic", choices=["auto", "4d-component", "4d-project"], default="auto",
+                        help="GitHub topic for the project type (default: auto-detect from settings.4DSettings)")
     
     args = parser.parse_args()
     interactive = not args.yes
@@ -268,6 +307,7 @@ Examples:
     if not setup_github_repo(project_root, project_name, 
                               public=args.public, 
                               description=args.description,
+                              topic=args.topic,
                               interactive=interactive):
         return 1
     

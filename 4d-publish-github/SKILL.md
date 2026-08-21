@@ -31,6 +31,7 @@ python3 "<skill_path>/scripts/publish.py" --yes [options]
 | `--yes`, `-y` | Non-interactive mode |
 | `--public` | Create public repository (default: private) |
 | `--description "..."`, `-d` | Repository description |
+| `--topic {auto,4d-component,4d-project}` | GitHub topic for project type (default: `auto`) |
 
 **Examples:**
 ```bash
@@ -42,7 +43,23 @@ python3 publish.py --yes
 
 # Public repo with description
 python3 publish.py --yes --public --description "My 4D component"
+
+# Force the 4d-component topic instead of auto-detecting
+python3 publish.py --yes --topic 4d-component
 ```
+
+### Repository topics
+
+Every created repository gets the `4d` topic plus one of:
+
+- `4d-component` — the project is reusable by other projects (it defines its own
+  class namespace via a non-empty `component_classStore_name` in
+  `Project/Sources/settings.4DSettings`).
+- `4d-project` — otherwise, treated as a standalone project.
+
+Detection is automatic (`--topic auto`, the default). In interactive mode you can
+confirm or override the detected topic before the repository is created. Use
+`--topic 4d-component` or `--topic 4d-project` to force a value non-interactively.
 
 ### 2. install_workflows.py - Add CI/CD Workflows
 
