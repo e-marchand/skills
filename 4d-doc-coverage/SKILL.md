@@ -1,7 +1,6 @@
 ---
 name: 4d-doc-coverage
 description: 'Check that public 4D class methods/functions are documented and report documentation gaps. Use when the user asks whether public API is documented, to find undocumented methods/functions/properties, audit doc coverage before a release/PR, or verify a new public member was added to Documentation/Classes. Runs a Python script that compares Project/Sources/Classes against Documentation/Classes.'
-argument-hint: '[optional: class name to focus on]'
 ---
 
 # 4D Documentation Coverage
