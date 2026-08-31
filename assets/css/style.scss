@@ -1,0 +1,25 @@
+---
+---
+
+@import "jekyll-theme-primer";
+
+// The layout injects <h1>{{ site.title }}</h1> as the first child of
+// .markdown-body, and README.md opens with the same heading. Keep the
+// README's own H1 and hide the injected duplicate.
+.markdown-body > h1:first-child {
+  display: none;
+}
+
+// Let the wide "Available Skills" table use the full container instead of
+// wrapping the Description column; scroll on narrow screens.
+.markdown-body table {
+  display: table;
+  width: 100%;
+}
+
+@media (max-width: 767px) {
+  .markdown-body table {
+    display: block;
+    overflow-x: auto;
+  }
+}
