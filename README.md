@@ -17,6 +17,7 @@
 | [4d-find-command](4d-find-command/SKILL.md) | Find 4D commands by keyword | [tool4d](#tool4d), Python |
 | [4d-form-layout](4d-form-layout/SKILL.md) | Design or refactor 4D forms via a relational intermediate JSON format | Python |
 | [4d-form-screenshot](4d-form-screenshot/SKILL.md) | Capture a PNG screenshot for a specific 4D form | [tool4d](#tool4d) or 4D runtime |
+| [4d-form-widen](4d-form-widen/SKILL.md) | Widen a listbox (or any object) in a 4D form and reflow the others | Python |
 | [4d-github-ci](4d-github-ci/SKILL.md) | Set up GitHub CI workflows, funding and Actions secrets for a 4D project | Python, gh CLI |
 | [4d-project-info](4d-project-info/SKILL.md) | Analyze a 4D project and produce a structured summary | Python |
 | [4d-publish-github](4d-publish-github/SKILL.md) | Publish a 4D project to GitHub with CI/CD workflows | Python |
